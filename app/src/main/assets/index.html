@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NETTOYAGE ANDROID PRO</title>
+<style>
+:root{
+  --bg:#ECEFF1; --ink:#263238; --card:#fff; --line:#CFD8DC; --mut:#607D8B;
+  --blue:#1565C0; --orange:#EF6C00; --purple:#6A1B9A; --red:#C62828; --green:#2E7D32; --teal:#00838F; --brown:#6D4C41; --slate:#455A64;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px}
+body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+header{background:#263238;color:#fff;padding:10px 12px 10px;position:sticky;top:0;z-index:20}
+.top{display:flex;align-items:center;gap:8px}
+.top h1{font-size:19px;margin:0;flex:1;letter-spacing:.3px}
+.lang{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:14px}
+.stor{margin-top:8px}
+.bar{height:16px;background:#CFD8DC;border-radius:8px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--green);width:0}
+.stor small{display:flex;justify-content:space-between;margin-top:3px;font-size:13px;color:#CFD8DC}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 10px 4px}
+.tab{position:relative;border:0;border-radius:10px;color:#fff;font-weight:800;font-size:16px;padding:16px 6px;
+  box-shadow:0 3px 0 rgba(0,0,0,.28);letter-spacing:.2px}
+.tab small{display:block;font-weight:600;font-size:11px;opacity:.9;margin-top:2px}
+.tab.on{filter:brightness(.62);transform:translateY(3px);box-shadow:inset 0 3px 6px rgba(0,0,0,.5)}
+.tab.on::after{content:"";position:absolute;left:8px;right:8px;bottom:5px;height:6px;border-radius:3px;background:#FFD600}
+.panel{margin:8px 10px;background:var(--card);border:3px solid var(--ink);border-radius:12px;padding:12px}
+.panel h2{margin:0 0 6px;font-size:18px}
+.panel p{margin:4px 0 10px;color:var(--mut);font-size:15px;line-height:1.35}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+select,input[type=number]{font-size:16px;padding:10px;border:2px solid var(--line);border-radius:8px;background:#fff}
+label.ck{display:flex;gap:8px;align-items:center;font-size:15px}
+input[type=checkbox]{width:26px;height:26px;accent-color:var(--blue);flex:none}
+.btn{border:0;border-radius:10px;color:#fff;font-weight:800;font-size:17px;padding:14px 16px;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.go{background:var(--blue);flex:1}
+.btn.stop{background:var(--red)}
+.btn.ok{background:var(--green)}
+.btn.dis{background:#90A4AE}
+.btn[disabled]{opacity:.5}
+/* progression */
+.prog{margin:12px 0 4px}
+.track{position:relative;height:96px}
+.runbar{position:absolute;left:8px;right:8px;bottom:8px;height:26px;background:#CFD8DC;border-radius:6px;border:2px solid #90A4AE;overflow:hidden}
+.runbar>i{display:block;height:100%;width:0;background:var(--orange);transition:width .3s}
+.runbar b{position:absolute;inset:0;text-align:center;line-height:22px;font-size:15px}
+.runner{position:absolute;bottom:32px;left:0;width:46px;height:66px;transition:left .3s;margin-left:-6px}
+.flag{position:absolute;right:2px;bottom:32px;width:46px;height:66px}
+.runner .up{display:none}.runner.fin .up{display:inline}.runner.fin .dn{display:none}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.runner.run svg{animation:bob .35s infinite}
+.clocks{display:flex;justify-content:space-between;font-weight:800;font-size:18px;margin:2px 4px 6px}
+.banner{border-radius:10px;text-align:center;color:#fff;font-weight:900;font-size:26px;padding:14px 6px;background:#78909C;letter-spacing:1px}
+.banner.run{background:var(--orange)}.banner.done{background:var(--green);font-size:32px}.banner.err{background:var(--red)}
+.msg{font-size:14px;color:var(--mut);margin-top:6px;min-height:20px;word-break:break-all}
+/* resultats */
+.grp{margin-top:14px;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.gh{background:#ECEFF1;padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gh b{flex:1;font-size:16px}
+.gh .sm{border:0;border-radius:8px;background:var(--slate);color:#fff;font-weight:700;padding:8px 10px;font-size:14px}
+.gnote{padding:8px 10px;background:#FFF8E1;color:#6D4C41;font-size:14px}
+.it{display:flex;gap:10px;align-items:center;padding:10px;border-top:1px solid var(--line)}
+.it .ic{width:56px;height:56px;border-radius:8px;background:#CFD8DC;flex:none;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:26px}
+.it .tx{flex:1;min-width:0}
+.it .nm{font-weight:700;font-size:15px;word-break:break-all}
+.it .sb{font-size:13px;color:var(--mut);word-break:break-all}
+.it .sz{font-weight:800;font-size:15px;white-space:nowrap}
+.it.keep{background:#E8F5E9}
+.keepb{background:var(--green);color:#fff;border-radius:6px;font-size:12px;font-weight:800;padding:2px 6px;margin-left:6px}
+.fbar{height:8px;background:#CFD8DC;border-radius:4px;margin-top:4px;overflow:hidden}.fbar>i{display:block;height:100%;background:var(--blue)}
+.crumb{display:flex;gap:8px;align-items:center;margin:6px 0 4px;flex-wrap:wrap}
+.crumb code{background:#ECEFF1;padding:4px 8px;border-radius:6px;font-size:14px;word-break:break-all}
+.more{width:100%;border:0;background:#CFD8DC;padding:12px;font-weight:800;font-size:15px}
+.empty{padding:20px;text-align:center;color:var(--mut)}
+/* barre d'action */
+.act{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid var(--ink);padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30;display:none}
+.act.show{display:block}
+.act .sel{font-weight:800;margin-bottom:6px;font-size:16px}
+.act .row{margin:0}
+.act .btn{flex:1;padding:13px 6px;font-size:15px}
+/* fenetres */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.box{background:#fff;border-radius:14px;max-width:460px;width:100%;overflow:hidden;max-height:92vh;overflow-y:auto}
+.box .bn{background:var(--green);color:#fff;text-align:center;font-weight:900;font-size:32px;padding:18px}
+.box .bn.warn{background:var(--orange);font-size:24px}.box .bn.danger{background:var(--red);font-size:24px}
+.box .bd{padding:14px 16px;font-size:17px;line-height:1.4}
+.box .ft{padding:0 16px 16px;display:flex;gap:8px}
+.box .ft .btn{flex:1}
+.bt{display:flex;gap:10px;align-items:center;padding:10px;border-top:1px solid var(--line);flex-wrap:wrap}
+.bt .tx{flex:1;min-width:140px}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><h1>🧹 NETTOYAGE ANDROID PRO</h1><button class="lang" id="lang" onclick="toggleLang()">ENGLISH</button></div>
+  <div class="stor"><div class="bar"><i id="sbar"></i></div><small><span id="sused"></span><span id="sfree"></span></small></div>
+</header>
+
+<div class="tabs" id="tabs"></div>
+<div class="panel" id="panel"></div>
+
+<div class="act" id="act">
+  <div class="sel" id="seltxt"></div>
+  <div class="row">
+    <button class="btn ok" id="btnTrash" onclick="askDelete('trash')">♻ <span data-i="trash_btn">À LA CORBEILLE</span></button>
+    <button class="btn stop" id="btnPerm" onclick="askDelete('permanent')">🗑 <span data-i="perm_btn">SUPPRIMER</span></button>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="box" id="mbox"></div></div>
+
+<script>
+"use strict";
+/* ============================ langue ============================ */
+const EN={
+"ENGLISH":"FRANÇAIS",
+"ESPACE":"SPACE","GROS FICHIERS":"BIG FILES","DOUBLONS":"DUPLICATES","PHOTOS":"PHOTOS","MESSAGERIE":"MESSAGING","RÉSIDUS":"JUNK","CORBEILLE":"TRASH",
+"où est passée la place":"where the space went","les plus lourds":"the heaviest","fichiers identiques":"identical files","captures, floues, petites":"screenshots, blurry, small",
+"WhatsApp, Telegram…":"WhatsApp, Telegram…","caches et restes":"caches and leftovers","restaurer":"restore",
+"ANALYSER":"SCAN","ARRÊTER":"STOP","PRÊT":"READY","EN COURS…":"WORKING…","TERMINÉ":"DONE","ERREUR":"ERROR","ARRÊTÉ":"STOPPED",
+"ÉCOULÉ":"ELAPSED","RESTE":"LEFT","À LA CORBEILLE":"TO TRASH","SUPPRIMER":"DELETE","FERMER":"CLOSE","ANNULER":"CANCEL","CONFIRMER":"CONFIRM",
+"Libre":"Free","Utilisé":"Used","sur":"of",
+"Voir où est passée la place":"See where the space went",
+"Analyse chaque dossier du téléphone et classe du plus lourd au plus léger. Touche un dossier pour entrer dedans.":"Scans every folder of the phone and ranks them from heaviest to lightest. Tap a folder to open it.",
+"Les plus gros fichiers":"The biggest files",
+"Liste les vidéos, sauvegardes et téléchargements les plus lourds. Rien n'est coché d'avance : c'est toi qui choisis.":"Lists the heaviest videos, backups and downloads. Nothing is ticked in advance: you choose.",
+"Taille minimale :":"Minimum size:",
+"Photos et fichiers en double":"Duplicate photos and files",
+"Trouve les fichiers strictement identiques (même contenu). Le plus ancien de chaque groupe est gardé, les copies sont cochées.":"Finds strictly identical files (same content). The oldest of each group is kept, the copies are ticked.",
+"Taille minimale :":"Minimum size:",
+"Captures, photos floues, très petites images":"Screenshots, blurry photos, tiny images",
+"Rien n'est coché d'avance : regarde les miniatures et choisis. Les photos « floues » sont seulement des suspectes.":"Nothing is ticked in advance: look at the thumbnails and choose. “Blurry” photos are only suspects.",
+"Pillow absent : les photos floues et petites images ne sont pas analysées (pkg install python-pillow).":"Pillow missing: blurry and small photos are not analysed (pkg install python-pillow).",
+"Médias des messageries":"Messaging media",
+"Images, vidéos et vocaux reçus qui s'accumulent (WhatsApp, Telegram, Line, Messenger…).":"Received pictures, videos and voice notes piling up (WhatsApp, Telegram, Line, Messenger…).",
+"Plus vieux que :":"Older than:","jours":"days","tout":"all","Inclure les fichiers envoyés (Sent)":"Include sent files (Sent)",
+"Résidus et caches":"Leftovers and caches",
+"Miniatures, caches, fichiers temporaires, corbeille Android, APK téléchargés, dossiers vides, restes d'applis désinstallées.":"Thumbnails, caches, temp files, Android trash, downloaded APKs, empty folders, leftovers of uninstalled apps.",
+"Corbeille du nettoyage":"Cleaning trash",
+"Tout ce que tu mets « à la corbeille » est ici et peut être remis à sa place. Vide-la pour récupérer vraiment la place.":"Everything you send “to trash” is here and can be put back. Empty it to really get the space back.",
+"VIDER TOUTE LA CORBEILLE":"EMPTY ALL TRASH","RESTAURER":"RESTORE","VIDER":"EMPTY","La corbeille est vide.":"The trash is empty.",
+"éléments":"items","élément":"item","Rien trouvé.":"Nothing found.","Afficher plus":"Show more",
+"Dossier :":"Folder:","↑ Dossier parent":"↑ Parent folder","Analyse du dossier":"Scanning folder",
+"tout cocher":"tick all","tout décocher":"untick all","GARDER":"KEEP",
+"Miniatures de la galerie":"Gallery thumbnails","Caches et dossiers temporaires":"Caches and temp folders","Fichiers temporaires et journaux":"Temp files and logs",
+"Corbeille Android (.trashed)":"Android trash (.trashed)","APK téléchargés":"Downloaded APKs","Restes d'applis désinstallées":"Leftovers of uninstalled apps","Dossiers vides":"Empty folders",
+"Gros fichiers":"Big files","Captures d'écran":"Screenshots","Photos floues (suspectes)":"Blurry photos (suspects)","Très petites images":"Tiny images",
+"Mo":"MB","Go":"GB","Ko":"KB","o":"B","octets":"bytes",
+"Liste des applis installées indisponible dans Termux : les restes d'applis désinstallées ne sont pas cherchés.":"Installed-apps list unavailable in Termux: leftovers of uninstalled apps are not searched.",
+"sélectionné(s)":"selected","Rien de sélectionné":"Nothing selected",
+"Mettre à la corbeille ?":"Move to trash?","Supprimer DÉFINITIVEMENT ?":"Delete PERMANENTLY?",
+"Les fichiers seront déplacés dans la corbeille du nettoyage. Tu pourras les restaurer.":"Files will be moved to the cleaning trash. You will be able to restore them.",
+"IRRÉVERSIBLE : les fichiers seront effacés pour de bon, sans retour possible.":"IRREVERSIBLE: files will be erased for good, with no way back.",
+"Je comprends que c'est irréversible":"I understand this is irreversible",
+"Résumé":"Summary","libérés":"freed","déplacés":"moved","supprimés":"deleted","erreur(s)":"error(s)",
+"Analyse terminée":"Scan finished","à libérer au maximum":"to free at most","Aucune analyse en cours.":"No scan running.",
+"Sensibilité du flou :":"Blur sensitivity:","stricte":"strict","normale":"normal","large":"wide",
+"SYSTÈME":"SYSTEM","caches des applis, détail":"app caches, breakdown","Système et applications":"System and apps",
+"Vide d'un coup le cache de toutes les applis et montre ce qui prend vraiment la place (applis, données, système). Demande le « débogage sans fil » d'Android, à activer une fois.":"Clears every app's cache at once and shows what really takes the space (apps, data, system). Needs Android's “Wireless debugging”, to be enabled once.",
+"VIDER TOUS LES CACHES":"CLEAR ALL CACHES","ASSOCIER":"PAIR","CONNECTER":"CONNECT","code":"code",
+"adb n'est pas installé.":"adb is not installed.","Dans Termux, tape :":"In Termux, type:","Connecté au téléphone (débogage sans fil).":"Connected to the phone (wireless debugging).","Pas encore connecté.":"Not connected yet.",
+"1) Réglages › À propos du téléphone › touche 7 fois « Numéro de version ». 2) Réglages › Options pour les développeurs › active « Débogage sans fil » (le Wi-Fi doit être allumé). 3) Touche « Associer l'appareil avec un code » et recopie ci-dessous l'adresse:port et le code. 4) Reviens sur l'écran « Débogage sans fil » et recopie l'adresse:port de connexion (différent).":"1) Settings › About phone › tap “Build number” 7 times. 2) Settings › Developer options › turn on “Wireless debugging” (Wi-Fi must be on). 3) Tap “Pair device with pairing code” and copy the address:port and the code below. 4) Go back to the “Wireless debugging” screen and copy the connection address:port (it is different).",
+"adresse:port d'association":"pairing address:port","adresse:port de connexion":"connection address:port",
+"Pas connecté : fais d'abord l'association ci-dessus.":"Not connected: pair the phone above first.","Caches vidés":"Caches cleared",
+"Le téléphone n'a pas donné le détail du stockage (dumpsys diskstats).":"The phone did not give the storage breakdown (dumpsys diskstats).",
+"Ce qui prend la place":"What takes the space","Applis (programmes)":"Apps (programs)","Données des applis":"App data","Caches des applis":"App caches","Vidéos":"Videos","Téléchargements":"Downloads","Système Android":"Android system","Autres":"Other",
+"« Système Android » est Android lui-même : il ne se vide pas sans accès root. Tout le reste peut être réduit.":"“Android system” is Android itself: it cannot be emptied without root access. Everything else can be reduced.",
+"Applis les plus lourdes":"Heaviest apps","DÉSINSTALLER LA SÉLECTION":"UNINSTALL SELECTION","Désinstaller ?":"Uninstall?","IRRÉVERSIBLE : l'appli et ses données seront supprimées.":"IRREVERSIBLE: the app and its data will be deleted.",
+"appli":"app","données":"data","cache":"cache","système (non désinstallable ici)":"system (cannot be uninstalled here)",
+"Analyse arrêtée : résultats partiels.":"Scan stopped: partial results.","Restauré":"Restored","Corbeille vidée":"Trash emptied","fichiers remis en place":"files put back"
+};
+let LANG=(()=>{try{return localStorage.getItem("nap_lang")||"fr"}catch(e){return "fr"}})();
+function t(s){return LANG==="en"&&EN[s]!==undefined?EN[s]:s}
+function toggleLang(){LANG=LANG==="fr"?"en":"fr";try{localStorage.setItem("nap_lang",LANG)}catch(e){};document.documentElement.lang=LANG;applyLang();renderTabs();renderPanel();renderResult();updJob(true);updSel();storage()}
+function applyLang(){document.getElementById("lang").textContent=t("ENGLISH");document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i==="trash_btn"?"À LA CORBEILLE":"SUPPRIMER"))}
+
+/* ============================ utilitaires ============================ */
+const $=id=>document.getElementById(id);
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+function fmt(b){const u=[t("o"),t("Ko"),t("Mo"),t("Go")];let i=0,v=b;while(v>=1024&&i<3){v/=1024;i++}
+  const s=(i===0?String(Math.round(v)):v.toFixed(v>=100?0:1));return (LANG==="fr"?s.replace(".",","):s)+" "+u[i]}
+function fdate(m){const d=new Date(m*1000);return d.toLocaleDateString(LANG==="fr"?"fr-FR":"en-GB")}
+function mmss(s){s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+async function api(url,body){const r=await fetch(url,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:undefined);return r.json()}
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[880,1175,1568].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.25,c.currentTime+i*.18);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.18+.16);o.start(c.currentTime+i*.18);o.stop(c.currentTime+i*.18+.17)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([200,100,200,100,400])}catch(e){}}
+
+/* ============================ onglets ============================ */
+const TABS=[
+ {id:"folder",name:"ESPACE",sub:"où est passée la place",col:"var(--blue)"},
+ {id:"big",name:"GROS FICHIERS",sub:"les plus lourds",col:"var(--orange)"},
+ {id:"dups",name:"DOUBLONS",sub:"fichiers identiques",col:"var(--purple)"},
+ {id:"photos",name:"PHOTOS",sub:"captures, floues, petites",col:"var(--red)"},
+ {id:"social",name:"MESSAGERIE",sub:"WhatsApp, Telegram…",col:"var(--green)"},
+ {id:"junk",name:"RÉSIDUS",sub:"caches et restes",col:"var(--teal)"},
+ {id:"system",name:"SYSTÈME",sub:"caches des applis, détail",col:"var(--slate)"},
+ {id:"trash",name:"CORBEILLE",sub:"restaurer",col:"var(--brown)"},
+];
+const APPMODE=/[?&]app=1/.test(location.search);
+if(APPMODE){for(let k=TABS.length-1;k>=0;k--)if(TABS[k].id==="system")TABS.splice(k,1)}
+let tab="folder", RES=null, SEL=new Map(), SHOWN={}, FOLDER_BASE=null, LASTID=0, STOREPIL=true;
+function renderTabs(){const box=$("tabs");box.innerHTML="";
+  TABS.forEach((x,i)=>{const b=el("button","tab"+(x.id===tab?" on":""));b.style.background=x.col;
+    b.append(t(x.name));const s=el("small","",t(x.sub));b.append(s);b.onclick=()=>{if(JOB&&JOB.running)return;tab=x.id;RES=null;SEL.clear();renderTabs();renderPanel();renderResult();updSel();if(tab==="trash")loadTrash()};
+    if(i===0&&TABS.length%2===1){}
+    box.append(b)})}
+
+/* ============================ panneau ============================ */
+function runnerSVG(){return `<svg viewBox="0 0 46 66" width="46" height="66"><g stroke="#263238" stroke-width="3" stroke-linecap="round" fill="none">
+ <circle cx="23" cy="10" r="7" fill="#FFCC80"/><path d="M16 6 q7 -8 14 0" stroke="#EF6C00" stroke-width="4"/>
+ <path d="M23 17 V40"/><path d="M23 40 L14 60"/><path d="M23 40 L33 58"/>
+ <g class="dn"><path d="M23 24 L11 34"/><path d="M23 24 L36 30"/><rect x="33" y="27" width="11" height="8" rx="2" fill="#546E7A" stroke="#263238" stroke-width="2"/></g>
+ <g class="up"><path d="M23 24 L9 8"/><path d="M23 24 L37 8"/><rect x="31" y="0" width="11" height="8" rx="2" fill="#546E7A" stroke="#263238" stroke-width="2"/></g></g></svg>`}
+function flagSVG(){return `<svg viewBox="0 0 46 66" width="46" height="66"><rect x="6" y="2" width="4" height="62" fill="#455A64"/><circle cx="8" cy="3" r="4" fill="#FFD600"/>
+ ${Array.from({length:12},(_,i)=>`<rect x="${10+(i%4)*8}" y="${6+Math.floor(i/4)*8}" width="8" height="8" fill="${(i%4+Math.floor(i/4))%2?'#fff':'#111'}"/>`).join("")}<rect x="10" y="6" width="32" height="24" fill="none" stroke="#111" stroke-width="1"/></svg>`}
+function progBlock(){return `<div class="prog" id="prog">
+ <div class="track"><div class="flag">${flagSVG()}</div><div class="runner" id="runner">${runnerSVG()}</div>
+ <div class="runbar"><i id="pbar"></i><b id="ptxt">0 %</b></div></div>
+ <div class="clocks"><span>⏱ ${t("ÉCOULÉ")} <span id="cEl">00:00</span></span><span>⌛ ${t("RESTE")} <span id="cLeft">--:--</span></span></div>
+ <div class="banner" id="banner">${t("PRÊT")}</div><div class="msg" id="pmsg"></div>
+ <div class="row" style="margin-top:8px"><button class="btn stop" id="btnStop" style="flex:1" onclick="api('/api/stop',{})" disabled>⏹ ${t("ARRÊTER")}</button></div></div>`}
+function selOpts(vals,cur,unit){return vals.map(v=>`<option value="${v}"${v==cur?" selected":""}>${v===0?t("tout"):v+" "+unit}</option>`).join("")}
+function renderPanel(){const p=$("panel");let h="";
+ if(tab==="folder")h=`<h2>${t("Voir où est passée la place")}</h2><p>${t("Analyse chaque dossier du téléphone et classe du plus lourd au plus léger. Touche un dossier pour entrer dedans.")}</p>
+   <div class="row"><button class="btn go" onclick="startScan('folder',{path:null})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="big")h=`<h2>${t("Les plus gros fichiers")}</h2><p>${t("Liste les vidéos, sauvegardes et téléchargements les plus lourds. Rien n'est coché d'avance : c'est toi qui choisis.")}</p>
+   <div class="row"><span>${t("Taille minimale :")}</span><select id="optBig">${selOpts([20,50,100,200,500],50,t("Mo"))}</select></div>
+   <div class="row"><button class="btn go" onclick="startScan('big',{min_mb:+$('optBig').value})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="dups")h=`<h2>${t("Photos et fichiers en double")}</h2><p>${t("Trouve les fichiers strictement identiques (même contenu). Le plus ancien de chaque groupe est gardé, les copies sont cochées.")}</p>
+   <div class="row"><span>${t("Taille minimale :")}</span><select id="optDup">${[50,200,1000].map(v=>`<option value="${v}">${v>=1000?"1 "+t("Mo"):v+" "+t("Ko")}</option>`).join("")}</select></div>
+   <div class="row"><button class="btn go" onclick="startScan('dups',{min_kb:+$('optDup').value})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="photos")h=`<h2>${t("Captures, photos floues, très petites images")}</h2><p>${t("Rien n'est coché d'avance : regarde les miniatures et choisis. Les photos « floues » sont seulement des suspectes.")}</p>
+   ${STOREPIL?"":`<p style="color:var(--red)">${t("Pillow absent : les photos floues et petites images ne sont pas analysées (pkg install python-pillow).")}</p>`}
+   <div class="row"><span>${t("Sensibilité du flou :")}</span><select id="optBlur"><option value="20">${t("stricte")}</option><option value="45" selected>${t("normale")}</option><option value="80">${t("large")}</option></select></div>
+   <div class="row"><button class="btn go" onclick="startScan('photos',{blur:+$('optBlur').value})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="social")h=`<h2>${t("Médias des messageries")}</h2><p>${t("Images, vidéos et vocaux reçus qui s'accumulent (WhatsApp, Telegram, Line, Messenger…).")}</p>
+   <div class="row"><span>${t("Plus vieux que :")}</span><select id="optAge">${[30,60,90,180,365,0].map(v=>`<option value="${v}"${v===60?" selected":""}>${v===0?t("tout"):v+" "+t("jours")}</option>`).join("")}</select></div>
+   <label class="ck row"><input type="checkbox" id="optSent"> ${t("Inclure les fichiers envoyés (Sent)")}</label>
+   <div class="row"><button class="btn go" onclick="startScan('social',{age:+$('optAge').value,sent:$('optSent').checked})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="junk")h=`<h2>${t("Résidus et caches")}</h2><p>${t("Miniatures, caches, fichiers temporaires, corbeille Android, APK téléchargés, dossiers vides, restes d'applis désinstallées.")}</p>
+   <div class="row"><button class="btn go" onclick="startScan('junk',{})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="system")h=`<h2>${t("Système et applications")}</h2><p>${t("Vide d'un coup le cache de toutes les applis et montre ce qui prend vraiment la place (applis, données, système). Demande le « débogage sans fil » d'Android, à activer une fois.")}</p>
+   <div id="adbBox"></div>
+   <div class="row"><button class="btn go" onclick="sysRun('scan')">🔍 ${t("ANALYSER")}</button><button class="btn ok" style="flex:1" onclick="sysRun('trim')">🧽 ${t("VIDER TOUS LES CACHES")}</button></div>`;
+ else h=`<h2>${t("Corbeille du nettoyage")}</h2><p>${t("Tout ce que tu mets « à la corbeille » est ici et peut être remis à sa place. Vide-la pour récupérer vraiment la place.")}</p><div id="trashList"></div>`;
+ if(tab!=="trash")h+=progBlock();
+ h+=`<div id="result"></div>`;p.innerHTML=h;updJob(true);if(tab==="system")adbBox()}
+
+/* ============================ analyses ============================ */
+let JOB=null, POLL=null;
+async function startScan(kind,opt){const r=await api("/api/scan",Object.assign({kind},opt));if(!r.ok)return;RES=null;SEL.clear();SHOWN={};renderResult();updSel();$("btnStop").disabled=false;
+  JOB={running:true,pct:0,elapsed:0,msg:"",kind};setBanner("run");clearInterval(POLL);POLL=setInterval(pollJob,500);pollJob()}
+async function pollJob(){const j=await api("/api/job");JOB=j;updJob();if(!j.running){clearInterval(POLL);POLL=null;await finishJob(j)}}
+function setBanner(k,txt){const b=$("banner");if(!b)return;b.className="banner "+(k||"");b.textContent=txt||({run:t("EN COURS…"),done:t("TERMINÉ"),err:t("ERREUR"),stop:t("ARRÊTÉ")}[k]||t("PRÊT"))}
+function updJob(force){if(!$("prog"))return;const j=JOB;if(!j){setBanner("");$("pbar").style.width="0";return}
+  const pct=j.pct||0;$("pbar").style.width=pct+"%";$("ptxt").textContent=Math.round(pct)+" %";
+  const tr=$("pbar").parentElement.clientWidth-40;$("runner").style.left=(8+tr*pct/100)+"px";
+  $("runner").className="runner"+(j.running?" run":(pct>=100&&!j.error?" fin":""));
+  $("cEl").textContent=mmss(j.elapsed||0);$("cLeft").textContent=j.running?(pct>3?mmss((j.elapsed||0)*(100-pct)/pct):"--:--"):"00:00";
+  $("pmsg").textContent=j.running?(j.msg||""):"";$("btnStop").disabled=!j.running;
+  if(j.running)setBanner("run");}
+async function finishJob(j){const r=await api("/api/result");$("btnStop") && ($("btnStop").disabled=true);
+  if(r.error){setBanner("err");$("pmsg").textContent=r.error;return}
+  RES=r.result;LASTID=r.id;renderResult();setBanner(RES&&RES.stopped?"stop":"done");updJob();
+  let sum="";if(RES&&RES.type==="dups")sum=RES.groups.length+" × "+t("DOUBLONS")+" — "+fmt(RES.saving)+" "+t("à libérer au maximum");
+  else if(RES&&RES.type==="list"){const n=RES.groups.reduce((a,g)=>a+(g.count||g.items.length),0);const sz=RES.groups.reduce((a,g)=>a+(g.total!==undefined?g.total:g.items.reduce((x,i)=>x+i.s,0)),0);sum=n+" "+t("éléments")+" — "+fmt(sz)}
+  else if(RES&&RES.type==="system")sum=RES.error?"":fmt(Object.values(RES.parts).reduce((a,b)=>a+b,0));
+  else if(RES&&RES.type==="trim")sum=RES.error?"":t("Caches vidés")+" : "+fmt(RES.freed);
+  else if(RES&&RES.type==="uninstall")sum=RES.results.filter(r=>r.ok).length+" / "+RES.results.length;
+  else if(RES&&RES.type==="folder")sum=RES.items.length+" "+t("éléments")+" — "+fmt(RES.total);
+  beep();try{window.focus()}catch(e){}
+  modal(RES&&RES.stopped?"warn":"ok",RES&&RES.stopped?t("ARRÊTÉ"):t("TERMINÉ"),t("Analyse terminée")+"<br><b>"+sum+"</b>"+(RES&&RES.stopped?"<br>"+t("Analyse arrêtée : résultats partiels."):""),[[t("FERMER"),"ok",closeModal]]);
+}
+
+/* ============================ resultats ============================ */
+const GT={g_big:"Gros fichiers",g_thumb:"Miniatures de la galerie",g_cache:"Caches et dossiers temporaires",g_tmp:"Fichiers temporaires et journaux",g_trashed:"Corbeille Android (.trashed)",
+ g_apk:"APK téléchargés",g_resid:"Restes d'applis désinstallées",g_empty:"Dossiers vides",g_shots:"Captures d'écran",g_blur:"Photos floues (suspectes)",g_small:"Très petites images"};
+function isImg(n){return /\.(jpe?g|png|webp|gif|bmp)$/i.test(n)}
+function rowEl(it,opts){opts=opts||{};const r=el("div","it"+(it.keep?" keep":""));
+  const cb=el("input");cb.type="checkbox";cb.checked=SEL.has(it.p);cb.disabled=!!it.keep;cb.onchange=()=>{cb.checked?SEL.set(it.p,it.s):SEL.delete(it.p);updSel()};cb.dataset.p=it.p;
+  r.append(cb);
+  let ic;if(opts.thumbs&&isImg(it.n)){ic=el("img","ic");ic.loading="lazy";ic.src="/api/thumb?p="+encodeURIComponent(it.p);ic.onerror=()=>{ic.replaceWith(el("div","ic","🖼"))}}
+  else ic=el("div","ic",it.dir?"📁":(/\.(mp4|mkv|mov|avi|3gp|webm)$/i.test(it.n)?"🎞":(isImg(it.n)?"🖼":(/\.apk$/i.test(it.n)?"📦":"📄"))));
+  if(opts.onOpen&&it.dir){ic.style.cursor="pointer";ic.onclick=()=>opts.onOpen(it)}
+  r.append(ic);const tx=el("div","tx");const nm=el("div","nm",it.n);if(it.keep){nm.append(el("span","keepb",t("GARDER")))}
+  if(opts.onOpen&&it.dir){nm.style.cursor="pointer";nm.onclick=()=>opts.onOpen(it);nm.style.color="var(--blue)"}
+  tx.append(nm);tx.append(el("div","sb",(it.d&&it.d!=="."?it.d+" · ":"")+fdate(it.m)+(it.x?" · "+it.x:"")));
+  if(opts.maxsz){const f=el("div","fbar");const i=el("i");i.style.width=Math.max(2,100*it.s/opts.maxsz)+"%";f.append(i);tx.append(f)}
+  r.append(tx);r.append(el("div","sz",fmt(it.s)));return r}
+function groupBox(titleTxt,items,o){o=o||{};const g=el("div","grp");const h=el("div","gh");h.append(el("b","",titleTxt));
+  const a=el("button","sm",t("tout cocher"));a.onclick=()=>{items.forEach(i=>{if(!i.keep)SEL.set(i.p,i.s)});g.querySelectorAll("input[type=checkbox]").forEach(c=>{if(!c.disabled)c.checked=true});updSel()};
+  const d=el("button","sm",t("tout décocher"));d.onclick=()=>{items.forEach(i=>SEL.delete(i.p));g.querySelectorAll("input[type=checkbox]").forEach(c=>c.checked=false);updSel()};
+  h.append(a,d);g.append(h);if(o.note)g.append(el("div","gnote",o.note));
+  const body=el("div");g.append(body);const id=o.id||titleTxt;let n=SHOWN[id]||150;
+  const draw=()=>{body.innerHTML="";items.slice(0,n).forEach(i=>body.append(rowEl(i,o)));if(items.length>n){const m=el("button","more",t("Afficher plus")+" ("+(items.length-n)+")");m.onclick=()=>{n+=300;SHOWN[id]=n;draw()};body.append(m)}if(!items.length)body.append(el("div","empty",t("Rien trouvé.")))};
+  draw();return g}
+function renderResult(){const box=$("result");if(!box)return;box.innerHTML="";if(!RES)return;
+  if(["system","trim","uninstall"].includes(RES.type)){renderSystem(box);return}
+  if(RES.type==="folder"){FOLDER_BASE=RES.base;const rel=RES.base===RES.root?"/":RES.base.slice(RES.root.length);
+    const c=el("div","crumb");c.append(el("code","",t("Dossier :")+" "+rel));c.append(el("b","",fmt(RES.total)));box.append(c);
+    if(RES.base!==RES.root){const up=el("button","sm",t("↑ Dossier parent"));up.className="btn go";up.style.cssText="width:100%;margin:6px 0";up.onclick=()=>startScan("folder",{path:RES.base.slice(0,RES.base.lastIndexOf("/"))||RES.root});box.append(up)}
+    const mx=RES.items.length?RES.items[0].s:1;const g=groupBox(t("ESPACE"),RES.items,{maxsz:mx,id:"folder:"+RES.base,onOpen:it=>startScan("folder",{path:it.p})});box.append(g)}
+  else if(RES.type==="dups"){if(!RES.groups.length){box.append(el("div","empty",t("Rien trouvé.")));return}
+    const head=el("div","crumb");head.append(el("b","",RES.groups.length+" × "+t("DOUBLONS")+" — "+fmt(RES.saving)+" "+t("à libérer au maximum")));box.append(head);
+    const all=[];RES.groups.forEach(g=>g.forEach(i=>{if(!i.keep){SEL.set(i.p,i.s);all.push(i)}}));
+    RES.groups.slice(0,150).forEach((gr,k)=>box.append(groupBox(fmt(gr[0].s)+" × "+gr.length,gr,{thumbs:true,id:"d"+k})));updSel()}
+  else if(RES.type==="list"){if(RES.note==="nopm")box.append(el("div","gnote",t("Liste des applis installées indisponible dans Termux : les restes d'applis désinstallées ne sont pas cherchés.")));
+    RES.groups.forEach(g=>{const title=g.k==="g_app"?g.x+" ("+g.count+")":(t(GT[g.k]||g.k)+(g.x&&g.k==="g_big"?" ≥ "+g.x.replace("Mo",t("Mo")):"")+(g.count!==undefined?" ("+g.count+" — "+fmt(g.total||0)+")":""));
+      if(g.sel)g.items.forEach(i=>SEL.set(i.p,i.s));box.append(groupBox(title,g.items,{thumbs:g.thumbs,id:g.k+(g.x||"")}))});updSel()}
+  if(RES.type!=="folder"&&!box.children.length)box.append(el("div","empty",t("Rien trouvé.")))}
+function updSel(){const n=SEL.size;let s=0;SEL.forEach(v=>s+=v);const a=$("act");if(!a)return;a.classList.toggle("show",n>0);
+  $("seltxt").textContent=n?n+" "+t("sélectionné(s)")+" — "+fmt(s):t("Rien de sélectionné");}
+
+/* ============================ suppression ============================ */
+function closeModal(){$("modal").classList.remove("show")}
+function modal(kind,title,html,btns){const b=$("mbox");b.innerHTML="";const bn=el("div","bn"+(kind==="warn"?" warn":kind==="danger"?" danger":""),title);const bd=el("div","bd");bd.innerHTML=html;const ft=el("div","ft");
+  btns.forEach(([txt,cls,fn])=>{const x=el("button","btn "+cls,txt);x.onclick=fn;ft.append(x)});b.append(bn,bd,ft);$("modal").classList.add("show");return b}
+function askDelete(mode){const n=SEL.size;if(!n)return;let s=0;SEL.forEach(v=>s+=v);
+  if(mode==="trash")modal("warn",t("Mettre à la corbeille ?"),n+" "+t("éléments")+" — <b>"+fmt(s)+"</b><br>"+t("Les fichiers seront déplacés dans la corbeille du nettoyage. Tu pourras les restaurer."),[[t("ANNULER"),"dis",closeModal],[t("CONFIRMER"),"ok",()=>doDelete("trash")]]);
+  else{const b=modal("danger",t("Supprimer DÉFINITIVEMENT ?"),n+" "+t("éléments")+" — <b>"+fmt(s)+"</b><br>"+t("IRRÉVERSIBLE : les fichiers seront effacés pour de bon, sans retour possible.")+"<br><br><label class='ck'><input type='checkbox' id='iu'> "+t("Je comprends que c'est irréversible")+"</label>",[[t("ANNULER"),"dis",closeModal],[t("SUPPRIMER"),"stop",()=>{if($("iu").checked)doDelete("permanent")}]]);}}
+async function doDelete(mode){closeModal();const paths=[...SEL.keys()];const r=await api("/api/delete",{paths,mode});
+  const gone=new Set(paths);(r.errors||[]).forEach(e=>gone.delete(e[0]));
+  if(RES){if(RES.type==="folder")RES.items=RES.items.filter(i=>!gone.has(i.p));else if(RES.type==="list")RES.groups.forEach(g=>g.items=g.items.filter(i=>!gone.has(i.p)));
+    else if(RES.type==="dups"){RES.groups=RES.groups.map(g=>g.filter(i=>!gone.has(i.p))).filter(g=>g.length>1)}}
+  SEL.clear();renderResult();updSel();storage();beep();
+  modal(r.nerr?"warn":"ok",t("TERMINÉ"),"<b>"+fmt(r.freed)+"</b> "+(mode==="trash"?t("déplacés"):t("supprimés"))+"<br>"+r.done+" "+t("éléments")+(r.nerr?"<br>⚠ "+r.nerr+" "+t("erreur(s)"):""),[[t("FERMER"),"ok",closeModal]])}
+
+
+/* ============================ SYSTÈME (adb) ============================ */
+async function adbBox(){const b=$("adbBox");if(!b)return;let s={adb:false,connected:false};try{s=await api("/api/sys/status")}catch(e){}
+  b.innerHTML="";const c=el("div","gnote");
+  if(!s.adb){c.style.background="#FFEBEE";c.innerHTML="<b>"+t("adb n'est pas installé.")+"</b><br>"+t("Dans Termux, tape :")+" <code>pkg install android-tools</code>";b.append(c);return}
+  if(s.connected){c.style.background="#E8F5E9";c.style.color="#1B5E20";c.innerHTML="✔ <b>"+t("Connecté au téléphone (débogage sans fil).")+"</b>";b.append(c);return}
+  c.innerHTML="<b>"+t("Pas encore connecté.")+"</b><br>"+t("1) Réglages › À propos du téléphone › touche 7 fois « Numéro de version ». 2) Réglages › Options pour les développeurs › active « Débogage sans fil » (le Wi-Fi doit être allumé). 3) Touche « Associer l'appareil avec un code » et recopie ci-dessous l'adresse:port et le code. 4) Reviens sur l'écran « Débogage sans fil » et recopie l'adresse:port de connexion (différent).");b.append(c);
+  const r1=el("div","row");r1.innerHTML=`<input id="pairHp" placeholder="${t("adresse:port d'association")}" style="flex:2;min-width:160px;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:8px"><input id="pairCode" placeholder="${t("code")}" inputmode="numeric" style="flex:1;min-width:90px;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:8px"><button class="btn go" style="flex:none" onclick="sysPair()">${t("ASSOCIER")}</button>`;
+  const r2=el("div","row");r2.innerHTML=`<input id="connHp" placeholder="${t("adresse:port de connexion")}" style="flex:3;min-width:160px;padding:10px;font-size:16px;border:2px solid var(--line);border-radius:8px"><button class="btn go" style="flex:none" onclick="sysConnect()">${t("CONNECTER")}</button>`;
+  const m=el("div","msg");m.id="adbMsg";b.append(r1,r2,m)}
+async function sysPair(){const r=await api("/api/sys/pair",{hp:$("pairHp").value,code:$("pairCode").value});$("adbMsg").textContent=(r.ok?"✔ ":"✖ ")+(r.msg||"")}
+async function sysConnect(){const r=await api("/api/sys/connect",{hp:$("connHp").value});$("adbMsg").textContent=(r.ok?"✔ ":"✖ ")+(r.msg||"");if(r.ok)setTimeout(adbBox,600)}
+async function sysRun(kind,pkgs){const r=await api("/api/sys/run",{kind,pkgs});if(!r.ok)return;RES=null;SEL.clear();renderResult();updSel();$("btnStop").disabled=false;
+  JOB={running:true,pct:0,elapsed:0,msg:"",kind};setBanner("run");clearInterval(POLL);POLL=setInterval(pollJob,500);pollJob()}
+const PART_N={"App Size":"Applis (programmes)","App Data Size":"Données des applis","App Cache Size":"Caches des applis","Photos Size":"Photos","Videos Size":"Vidéos","Audio Size":"Audio","Downloads Size":"Téléchargements","System Size":"Système Android","Other Size":"Autres"};
+const PART_C={"App Size":"var(--blue)","App Data Size":"var(--purple)","App Cache Size":"var(--orange)","Photos Size":"var(--green)","Videos Size":"var(--red)","Audio Size":"var(--teal)","Downloads Size":"var(--brown)","System Size":"var(--slate)","Other Size":"#90A4AE"};
+let SYSSEL=new Set();
+function renderSystem(box){
+  if(RES.type==="trim"){if(RES.error==="adb"){box.append(el("div","gnote",t("Pas connecté : fais d'abord l'association ci-dessus.")));return}
+    const g=el("div","grp");const b=el("div","bd");b.style.padding="14px";b.innerHTML="🧽 "+t("Caches vidés")+" : <b>"+fmt(RES.freed)+"</b><br><small>"+fmt(RES.before)+" → "+fmt(RES.after)+"</small>"+(RES.error?"<br>⚠ "+RES.error:"");g.append(b);box.append(g);storage();return}
+  if(RES.type==="uninstall"){const g=el("div","grp");RES.results.forEach(r=>{const x=el("div","it");x.append(el("div","tx",(r.ok?"✔ ":"✖ ")+r.pkg+(r.ok?"":" — "+r.msg)));g.append(x)});box.append(g);storage();return}
+  if(RES.error==="adb"){box.append(el("div","gnote",t("Pas connecté : fais d'abord l'association ci-dessus.")));return}
+  if(RES.error==="vide"){box.append(el("div","gnote",t("Le téléphone n'a pas donné le détail du stockage (dumpsys diskstats).")));return}
+  const tot=Object.values(RES.parts).reduce((a,b)=>a+b,0)||1;const g=el("div","grp");const gh=el("div","gh");gh.append(el("b","",t("Ce qui prend la place")+" — "+fmt(tot)));g.append(gh);
+  Object.keys(PART_N).filter(k=>RES.parts[k]!==undefined).sort((a,b)=>RES.parts[b]-RES.parts[a]).forEach(k=>{const r=el("div","it");const tx=el("div","tx");tx.append(el("div","nm",t(PART_N[k])));
+    const f=el("div","fbar");f.style.height="12px";const i=el("i");i.style.width=Math.max(1,100*RES.parts[k]/tot)+"%";i.style.background=PART_C[k];f.append(i);tx.append(f);r.append(tx);r.append(el("div","sz",fmt(RES.parts[k])));g.append(r)});box.append(g);
+  if(RES.parts["System Size"]!==undefined){const n=el("div","gnote",t("« Système Android » est Android lui-même : il ne se vide pas sans accès root. Tout le reste peut être réduit."));box.append(n)}
+  const ga=el("div","grp");const h2=el("div","gh");h2.append(el("b","",t("Applis les plus lourdes")));const un=el("button","btn stop",t("DÉSINSTALLER LA SÉLECTION"));un.style.cssText="flex:none;padding:8px 10px;font-size:13px";un.onclick=()=>{if(!SYSSEL.size)return;
+    modal("danger",t("Désinstaller ?"),[...SYSSEL].join("<br>")+"<br><br>"+t("IRRÉVERSIBLE : l'appli et ses données seront supprimées."),[[t("ANNULER"),"dis",closeModal],[t("CONFIRMER"),"stop",()=>{closeModal();sysRun("uninstall",[...SYSSEL]);SYSSEL.clear()}]])};h2.append(un);ga.append(h2);
+  SYSSEL.clear();RES.apps.forEach(a=>{const r=el("div","it");const cb=el("input");cb.type="checkbox";cb.disabled=!a.third;cb.onchange=()=>{cb.checked?SYSSEL.add(a.pkg):SYSSEL.delete(a.pkg)};r.append(cb);
+    const tx=el("div","tx");tx.append(el("div","nm",a.pkg));tx.append(el("div","sb",t("appli")+" "+fmt(a.app)+" · "+t("données")+" "+fmt(a.data)+" · "+t("cache")+" "+fmt(a.cache)+(a.third?"":" · "+t("système (non désinstallable ici)"))));r.append(tx);r.append(el("div","sz",fmt(a.total)));ga.append(r)});box.append(ga)}
+
+/* ============================ corbeille ============================ */
+async function loadTrash(){const r=await api("/api/trash");const box=$("trashList");if(!box)return;box.innerHTML="";
+  if(!r.batches.length){box.append(el("div","empty",t("La corbeille est vide.")));return}
+  const tot=r.batches.reduce((a,b)=>a+b.s,0);const ea=el("button","btn stop",t("VIDER TOUTE LA CORBEILLE")+" ("+fmt(tot)+")");ea.style.width="100%";ea.onclick=()=>modal("danger",t("VIDER TOUTE LA CORBEILLE"),fmt(tot)+"<br>"+t("IRRÉVERSIBLE : les fichiers seront effacés pour de bon, sans retour possible."),[[t("ANNULER"),"dis",closeModal],[t("CONFIRMER"),"stop",async()=>{closeModal();const x=await api("/api/trash/empty",{b:"all"});storage();loadTrash();modal("ok",t("TERMINÉ"),t("Corbeille vidée")+" : <b>"+fmt(x.freed)+"</b>",[[t("FERMER"),"ok",closeModal]]);beep()}]]);box.append(ea);
+  r.batches.forEach(b=>{const row=el("div","bt");const tx=el("div","tx");tx.append(el("div","nm",b.b.replace(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/,"$3/$2/$1 $4:$5")));tx.append(el("div","sb",b.n+" "+t("éléments")+" · "+fmt(b.s)));
+    const rs=el("button","btn ok",t("RESTAURER"));rs.style.cssText="flex:none;padding:10px 12px;font-size:14px";rs.onclick=async()=>{const x=await api("/api/trash/restore",{b:b.b});storage();loadTrash();modal("ok",t("Restauré"),x.restored+" "+t("fichiers remis en place"),[[t("FERMER"),"ok",closeModal]])};
+    const em=el("button","btn stop",t("VIDER"));em.style.cssText="flex:none;padding:10px 12px;font-size:14px";em.onclick=async()=>{await api("/api/trash/empty",{b:b.b});storage();loadTrash()};
+    row.append(tx,rs,em);box.append(row)})}
+
+/* ============================ stockage ============================ */
+async function storage(){try{const s=await api("/api/storage");STOREPIL=s.pil;const pc=s.total?100*s.used/s.total:0;$("sbar").style.width=pc+"%";$("sbar").style.background=pc>90?"var(--red)":pc>75?"var(--orange)":"var(--green)";
+  $("sused").textContent=t("Utilisé")+" "+fmt(s.used)+" "+t("sur")+" "+fmt(s.total);$("sfree").textContent=t("Libre")+" "+fmt(s.free)}catch(e){}}
+document.documentElement.lang=LANG;
+applyLang();renderTabs();renderPanel();storage();
+</script>
+</body>
+</html>
