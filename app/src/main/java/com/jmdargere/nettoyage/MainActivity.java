@@ -90,6 +90,10 @@ public class MainActivity extends Activity {
                     begin();
                     return true;
                 }
+                if (u.startsWith("open://")) {
+                    openExternal(u.substring(7));
+                    return true;
+                }
                 if (u.startsWith("access://")) {
                     askAccess();
                     return true;
@@ -245,6 +249,27 @@ public class MainActivity extends Activity {
             web.goBack();
         } else {
             super.onBackPressed();
+        }
+    }
+
+    /** open://apps -> liste des applis d'Android ; open://<paquet> -> lance l'appli (ou sa page Play Store). */
+    private void openExternal(String what) {
+        try {
+            Intent i;
+            if (what.startsWith("web/")) {
+                i = new Intent(Intent.ACTION_VIEW, Uri.parse(what.substring(4)));
+            } else if (what.equals("apps")) {
+                i = new Intent(android.provider.Settings.ACTION_APPLICATION_SETTINGS);
+            } else {
+                i = getPackageManager().getLaunchIntentForPackage(what);
+                if (i == null) {
+                    i = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("https://play.google.com/store/apps/details?id=" + what));
+                }
+            }
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+        } catch (Exception ignored) {
         }
     }
 }
