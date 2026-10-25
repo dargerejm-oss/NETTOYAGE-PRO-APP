@@ -14,6 +14,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-
 body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 header{background:#263238;color:#fff;padding:10px 12px 10px;position:sticky;top:0;z-index:20}
 .top{display:flex;align-items:center;gap:8px}
+.by{display:block;font-size:11px;font-weight:600;opacity:.8;letter-spacing:0;margin-top:1px}.by a{color:#FFCC80;text-decoration:none}
 .top h1{font-size:19px;margin:0;flex:1;letter-spacing:.3px}
 .lang{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:14px}
 .stor{margin-top:8px}
@@ -23,6 +24,9 @@ header{background:#263238;color:#fff;padding:10px 12px 10px;position:sticky;top:
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 10px 4px}
 .tab{position:relative;border:0;border-radius:10px;color:#fff;font-weight:800;font-size:16px;padding:16px 6px;
   box-shadow:0 3px 0 rgba(0,0,0,.28);letter-spacing:.2px}
+.chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 6px}
+.chip{border:2px solid var(--slate);background:#fff;color:var(--slate);font-weight:700;font-size:14px;border-radius:18px;padding:8px 12px}
+.chip.on{background:var(--slate);color:#fff}
 .tab small{display:block;font-weight:600;font-size:11px;opacity:.9;margin-top:2px}
 .tab.on{filter:brightness(.62);transform:translateY(3px);box-shadow:inset 0 3px 6px rgba(0,0,0,.5)}
 .tab.on::after{content:"";position:absolute;left:8px;right:8px;bottom:5px;height:6px;border-radius:3px;background:#FFD600}
@@ -95,7 +99,7 @@ input[type=checkbox]{width:26px;height:26px;accent-color:var(--blue);flex:none}
 </head>
 <body>
 <header>
-  <div class="top"><h1>🧹 NETTOYAGE ANDROID PRO</h1><button class="lang" id="lang" onclick="toggleLang()">ENGLISH</button></div>
+  <div class="top"><h1>🧹 NETTOYAGE ANDROID PRO<small class="by">par JM.DARGERE · <a id="igl" href="https://www.instagram.com/jean_michel_dargere/" target="_blank" rel="noopener">Instagram @jean_michel_dargere</a></small></h1><button class="lang" id="lang" onclick="toggleLang()">ENGLISH</button></div>
   <div class="stor"><div class="bar"><i id="sbar"></i></div><small><span id="sused"></span><span id="sfree"></span></small></div>
 </header>
 
@@ -105,6 +109,8 @@ input[type=checkbox]{width:26px;height:26px;accent-color:var(--blue);flex:none}
 <div class="act" id="act">
   <div class="sel" id="seltxt"></div>
   <div class="row">
+    <button class="btn go" id="btnUsb" style="display:none" onclick="askUsb()">💾 <span>VERS LA CLÉ</span></button>
+    <button class="btn go" id="btnShrink" style="display:none" onclick="askShrink()">📉 <span>ALLÉGER</span></button>
     <button class="btn ok" id="btnTrash" onclick="askDelete('trash')">♻ <span data-i="trash_btn">À LA CORBEILLE</span></button>
     <button class="btn stop" id="btnPerm" onclick="askDelete('permanent')">🗑 <span data-i="perm_btn">SUPPRIMER</span></button>
   </div>
@@ -195,17 +201,29 @@ const TABS=[
  {id:"photos",name:"PHOTOS",sub:"captures, floues, petites",col:"var(--red)"},
  {id:"social",name:"MESSAGERIE",sub:"WhatsApp, Telegram…",col:"var(--green)"},
  {id:"junk",name:"RÉSIDUS",sub:"caches et restes",col:"var(--teal)"},
+ {id:"usb",name:"CLÉ USB",sub:"déplacer photos et vidéos",col:"var(--green)"},
+ {id:"send",name:"ENVOYER",sub:"PC en Wi-Fi, cloud, applis",col:"var(--blue)"},
+ {id:"burst",name:"RAFALES",sub:"photos quasi identiques",col:"var(--purple)"},
+ {id:"shrink",name:"ALLÉGER",sub:"photos lourdes, original gardé",col:"var(--orange)"},
  {id:"system",name:"SYSTÈME",sub:"caches des applis, détail",col:"var(--slate)"},
  {id:"trash",name:"CORBEILLE",sub:"restaurer",col:"var(--brown)"},
 ];
-const APPMODE=/[?&]app=1/.test(location.search);
+const APPMODE=/[?&]app=1/.test(location.search);if(APPMODE){const a=document.getElementById("igl");if(a){a.href="open://web/"+a.href;a.removeAttribute("target")}}
 if(APPMODE){for(let k=TABS.length-1;k>=0;k--)if(TABS[k].id==="system")TABS.splice(k,1)}
-let tab="folder", RES=null, SEL=new Map(), SHOWN={}, FOLDER_BASE=null, LASTID=0, STOREPIL=true;
-function renderTabs(){const box=$("tabs");box.innerHTML="";
-  TABS.forEach((x,i)=>{const b=el("button","tab"+(x.id===tab?" on":""));b.style.background=x.col;
-    b.append(t(x.name));const s=el("small","",t(x.sub));b.append(s);b.onclick=()=>{if(JOB&&JOB.running)return;tab=x.id;RES=null;SEL.clear();renderTabs();renderPanel();renderResult();updSel();if(tab==="trash")loadTrash()};
-    if(i===0&&TABS.length%2===1){}
-    box.append(b)})}
+let tab="junk", RES=null, SEL=new Map(), SHOWN={}, FOLDER_BASE=null, LASTID=0, STOREPIL=true;
+const TOP=[
+ {name:"NETTOYER",sub:"en un clic, sans risque",col:"var(--green)",tabs:["junk"]},
+ {name:"GARDER",sub:"clé USB, PC, cloud",col:"var(--blue)",tabs:["usb","send"],lab:{usb:"💾 Clé USB",send:"💻 PC · ☁ Cloud · 📱 Applis"}},
+ {name:"TRIER",sub:"choisir quoi supprimer",col:"var(--orange)",tabs:["folder","big","dups","photos","burst","shrink","social","system"],lab:{folder:"Espace",big:"Gros fichiers",dups:"Doublons",photos:"Captures, floues",burst:"Rafales",shrink:"Alléger",social:"Messagerie",system:"Système"}},
+ {name:"CORBEILLE",sub:"restaurer",col:"var(--brown)",tabs:["trash"]}];
+function goTab(id){if(JOB&&JOB.running)return;tab=id;RES=null;SEL.clear();renderTabs();renderPanel();renderResult();updSel();if(tab==="trash")loadTrash()}
+function renderTabs(){const box=$("tabs");box.innerHTML="";const have=new Set(TABS.map(x=>x.id));
+  let cur=null;TOP.forEach(g=>{if(g.tabs.includes(tab))cur=g});
+  TOP.forEach(g=>{const ids=g.tabs.filter(i=>have.has(i));if(!ids.length)return;const on=g===cur;
+    const b=el("button","tab"+(on?" on":""));b.style.background=g.col;b.append(t(g.name));b.append(el("small","",t(g.sub)));
+    b.onclick=()=>goTab(on?tab:ids[0]);box.append(b)});
+  if(cur){const ids=cur.tabs.filter(i=>have.has(i));if(ids.length>1){const row=el("div","chips");
+    ids.forEach(i=>{const c=el("button","chip"+(i===tab?" on":""),t(cur.lab[i]||i));c.onclick=()=>goTab(i);row.append(c)});box.append(row)}}}
 
 /* ============================ panneau ============================ */
 function runnerSVG(){return `<svg viewBox="0 0 46 66" width="46" height="66"><g stroke="#263238" stroke-width="3" stroke-linecap="round" fill="none">
@@ -240,13 +258,36 @@ function renderPanel(){const p=$("panel");let h="";
    <label class="ck row"><input type="checkbox" id="optSent"> ${t("Inclure les fichiers envoyés (Sent)")}</label>
    <div class="row"><button class="btn go" onclick="startScan('social',{age:+$('optAge').value,sent:$('optSent').checked})">🔍 ${t("ANALYSER")}</button></div>`;
  else if(tab==="junk")h=`<h2>${t("Résidus et caches")}</h2><p>${t("Miniatures, caches, fichiers temporaires, corbeille Android, APK téléchargés, dossiers vides, restes d'applis désinstallées.")}</p>
-   <div class="row"><button class="btn go" onclick="startScan('junk',{})">🔍 ${t("ANALYSER")}</button></div>`;
+   <div class="row"><button class="btn ok" style="flex:1" onclick="askAuto()">🧹 ${t("NETTOYAGE AUTOMATIQUE SÛR")}</button></div>
+   <p style="font-size:14px">${t("Efface d'un coup, sans question, le purement technique : miniatures de galerie, caches, fichiers temporaires de plus d'un jour, dossiers vides. Jamais tes photos, vidéos, documents ou sauvegardes. Sans danger pour le téléphone.")}</p>
+   <div class="row"><button class="btn go" onclick="startScan('junk',{})">🔍 ${t("ANALYSER EN DÉTAIL")}</button></div>`;
+
+ else if(tab==="burst")h=`<h2>${t("Rafales et photos presque identiques")}</h2><p>${t("Regroupe les photos prises à la suite qui se ressemblent. La meilleure (la plus nette) est marquée ⭐. Rien n'est coché d'avance : utilise « tout cocher sauf la ⭐ » dans un groupe.")}</p>
+   ${STOREPIL?"":`<p style="color:var(--red)">${t("Pillow absent.")}</p>`}
+   <div class="row"><button class="btn go" onclick="startScan('similar',{})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="shrink")h=`<h2>${t("Alléger les photos lourdes")}</h2><p>${t("Recompresse les grosses photos JPEG (qualité visuelle quasi identique, dates et infos EXIF gardées). L'original va à la corbeille du nettoyage : tu peux le remettre. Rien n'est coché d'avance.")}</p>
+   <div class="row"><span>${t("Photos de plus de :")}</span><select id="optHeavy">${selOpts([2,3,5,8],3,t("Mo"))}</select></div>
+   <div class="row"><button class="btn go" onclick="startScan('heavy',{min_mb:+$('optHeavy').value})">🔍 ${t("ANALYSER")}</button></div>`;
+ else if(tab==="send")h=sendPanel();
+ else if(tab==="usb")h=`<h2>${t("Photos et vidéos vers une clé USB")}</h2><p>${t("Branche la clé (adaptateur OTG). Choisis quoi proposer, regarde la liste, puis copie. Chaque fichier est vérifié ; rien n'est effacé du téléphone sans ton accord.")}</p>
+   <div id="usbBox"></div>
+   <div class="grp" style="padding:8px"><b>${t("Quoi proposer :")}</b>
+    <label class="ck row"><input type="checkbox" class="uc" value="p" checked> 🖼 ${t("Photos")}</label>
+    <label class="ck row"><input type="checkbox" class="uc" value="v" checked> 🎞 ${t("Vidéos")}</label>
+    <label class="ck row"><input type="checkbox" class="uc" value="d"> 📄 ${t("Documents (PDF, Word, Excel, texte…)")}</label>
+    <label class="ck row"><input type="checkbox" class="uc" value="m"> ✉ ${t("Courrier et pièces jointes")}</label></div>
+   <details style="margin:6px 0"><summary style="font-weight:700">⚙ ${t("Options (âge, taille)")}</summary>
+   <div class="row"><span>${t("Plus vieux que :")}</span><select id="optUAge"><option value="0">${t("tout")}</option><option value="365">1 ${t("an")}</option><option value="730">2 ${t("ans")}</option></select></div>
+   <div class="row"><span>${t("Taille minimale :")}</span><select id="optUMb"><option value="0">${t("toutes")}</option><option value="10">10 ${t("Mo")}</option><option value="50">50 ${t("Mo")}</option><option value="200">200 ${t("Mo")}</option></select></div>
+   </details>
+   <div class="row"><button class="btn go" onclick="startScan('media',{cats:[...document.querySelectorAll('.uc:checked')].map(x=>x.value),age:+$('optUAge').value,min_mb:+$('optUMb').value})">🔍 ${t("PROPOSER")}</button></div>
+   <p style="font-size:14px">${t("Ensuite, dans chaque liste : coche ce que tu veux, puis « VERS LA CLÉ » pour le garder ailleurs, ou « À LA CORBEILLE » pour le supprimer.")}</p>`;
  else if(tab==="system")h=`<h2>${t("Système et applications")}</h2><p>${t("Vide d'un coup le cache de toutes les applis et montre ce qui prend vraiment la place (applis, données, système). Demande le « débogage sans fil » d'Android, à activer une fois.")}</p>
    <div id="adbBox"></div>
    <div class="row"><button class="btn go" onclick="sysRun('scan')">🔍 ${t("ANALYSER")}</button><button class="btn ok" style="flex:1" onclick="sysRun('trim')">🧽 ${t("VIDER TOUS LES CACHES")}</button></div>`;
  else h=`<h2>${t("Corbeille du nettoyage")}</h2><p>${t("Tout ce que tu mets « à la corbeille » est ici et peut être remis à sa place. Vide-la pour récupérer vraiment la place.")}</p><div id="trashList"></div>`;
- if(tab!=="trash")h+=progBlock();
- h+=`<div id="result"></div>`;p.innerHTML=h;updJob(true);if(tab==="system")adbBox()}
+ if(tab!=="trash"&&tab!=="send")h+=progBlock();
+ h+=`<div id="result"></div>`;p.innerHTML=h;updJob(true);if(tab==="system")adbBox();if(tab==="usb")usbBox();if(tab==="send")shareBox()}
 
 /* ============================ analyses ============================ */
 let JOB=null, POLL=null;
@@ -269,6 +310,9 @@ async function finishJob(j){const r=await api("/api/result");$("btnStop") && ($(
   else if(RES&&RES.type==="system")sum=RES.error?"":fmt(Object.values(RES.parts).reduce((a,b)=>a+b,0));
   else if(RES&&RES.type==="trim")sum=RES.error?"":t("Caches vidés")+" : "+fmt(RES.freed);
   else if(RES&&RES.type==="uninstall")sum=RES.results.filter(r=>r.ok).length+" / "+RES.results.length;
+  else if(RES&&RES.type==="autodone")sum=fmt(RES.freed)+" "+t("libérés");
+  else if(RES&&RES.type==="shrinkdone")sum=RES.done+" "+t("photos allégées")+" — "+fmt(RES.saved);
+  else if(RES&&RES.type==="usbdone")sum=RES.copied+RES.skipped+" / "+RES.total+" "+t("fichiers sur la clé");
   else if(RES&&RES.type==="folder")sum=RES.items.length+" "+t("éléments")+" — "+fmt(RES.total);
   beep();try{window.focus()}catch(e){}
   modal(RES&&RES.stopped?"warn":"ok",RES&&RES.stopped?t("ARRÊTÉ"):t("TERMINÉ"),t("Analyse terminée")+"<br><b>"+sum+"</b>"+(RES&&RES.stopped?"<br>"+t("Analyse arrêtée : résultats partiels."):""),[[t("FERMER"),"ok",closeModal]]);
@@ -292,11 +336,14 @@ function rowEl(it,opts){opts=opts||{};const r=el("div","it"+(it.keep?" keep":"")
 function groupBox(titleTxt,items,o){o=o||{};const g=el("div","grp");const h=el("div","gh");h.append(el("b","",titleTxt));
   const a=el("button","sm",t("tout cocher"));a.onclick=()=>{items.forEach(i=>{if(!i.keep)SEL.set(i.p,i.s)});g.querySelectorAll("input[type=checkbox]").forEach(c=>{if(!c.disabled)c.checked=true});updSel()};
   const d=el("button","sm",t("tout décocher"));d.onclick=()=>{items.forEach(i=>SEL.delete(i.p));g.querySelectorAll("input[type=checkbox]").forEach(c=>c.checked=false);updSel()};
-  h.append(a,d);g.append(h);if(o.note)g.append(el("div","gnote",o.note));
+  h.append(a,d);if(o.best){const bt=el('button','sm','tout cocher sauf ⭐');bt.textContent=t('tout cocher sauf ⭐');bt.onclick=()=>{items.forEach(i=>{if(i.p!==o.best)SEL.set(i.p,i.s);else SEL.delete(i.p)});g.querySelectorAll('input[type=checkbox]').forEach(c=>{c.checked=SEL.has(c.dataset.p)});updSel()};h.append(bt)}g.append(h);if(o.note)g.append(el("div","gnote",o.note));
   const body=el("div");g.append(body);const id=o.id||titleTxt;let n=SHOWN[id]||150;
   const draw=()=>{body.innerHTML="";items.slice(0,n).forEach(i=>body.append(rowEl(i,o)));if(items.length>n){const m=el("button","more",t("Afficher plus")+" ("+(items.length-n)+")");m.onclick=()=>{n+=300;SHOWN[id]=n;draw()};body.append(m)}if(!items.length)body.append(el("div","empty",t("Rien trouvé.")))};
   draw();return g}
 function renderResult(){const box=$("result");if(!box)return;box.innerHTML="";if(!RES)return;
+  if(RES.type==="usbdone"){usbDoneView(box);return}
+  if(RES.type==="shrinkdone"){shrinkDoneView(box);return}
+  if(RES.type==="autodone"){autoDoneView(box);return}
   if(["system","trim","uninstall"].includes(RES.type)){renderSystem(box);return}
   if(RES.type==="folder"){FOLDER_BASE=RES.base;const rel=RES.base===RES.root?"/":RES.base.slice(RES.root.length);
     const c=el("div","crumb");c.append(el("code","",t("Dossier :")+" "+rel));c.append(el("b","",fmt(RES.total)));box.append(c);
@@ -306,12 +353,74 @@ function renderResult(){const box=$("result");if(!box)return;box.innerHTML="";if
     const head=el("div","crumb");head.append(el("b","",RES.groups.length+" × "+t("DOUBLONS")+" — "+fmt(RES.saving)+" "+t("à libérer au maximum")));box.append(head);
     const all=[];RES.groups.forEach(g=>g.forEach(i=>{if(!i.keep){SEL.set(i.p,i.s);all.push(i)}}));
     RES.groups.slice(0,150).forEach((gr,k)=>box.append(groupBox(fmt(gr[0].s)+" × "+gr.length,gr,{thumbs:true,id:"d"+k})));updSel()}
-  else if(RES.type==="list"){if(RES.note==="nopm")box.append(el("div","gnote",t("Liste des applis installées indisponible dans Termux : les restes d'applis désinstallées ne sont pas cherchés.")));
+  else if(RES.type==="list"){if(RES.usb)allBar(box);if(RES.note==="nopm")box.append(el("div","gnote",t("Liste des applis installées indisponible dans Termux : les restes d'applis désinstallées ne sont pas cherchés.")));
     RES.groups.forEach(g=>{const title=g.k==="g_app"?g.x+" ("+g.count+")":(t(GT[g.k]||g.k)+(g.x&&g.k==="g_big"?" ≥ "+g.x.replace("Mo",t("Mo")):"")+(g.count!==undefined?" ("+g.count+" — "+fmt(g.total||0)+")":""));
-      if(g.sel)g.items.forEach(i=>SEL.set(i.p,i.s));box.append(groupBox(title,g.items,{thumbs:g.thumbs,id:g.k+(g.x||"")}))});updSel()}
+      if(g.sel)g.items.forEach(i=>SEL.set(i.p,i.s));box.append(groupBox(title,g.items,{thumbs:g.thumbs,best:g.best,id:g.k+(g.x||"")}))});updSel()}
   if(RES.type!=="folder"&&!box.children.length)box.append(el("div","empty",t("Rien trouvé.")))}
-function updSel(){const n=SEL.size;let s=0;SEL.forEach(v=>s+=v);const a=$("act");if(!a)return;a.classList.toggle("show",n>0);
+function updSel(){const n=SEL.size;const u=tab==="usb",sk=tab==="shrink";const sh=(i,v)=>{const e=$(i);if(e)e.style.display=v?"":"none"};sh("btnUsb",u);sh("btnShrink",sk);sh("btnTrash",!sk);sh("btnPerm",!u&&!sk);let s=0;SEL.forEach(v=>s+=v);const a=$("act");if(!a)return;a.classList.toggle("show",n>0);
   $("seltxt").textContent=n?n+" "+t("sélectionné(s)")+" — "+fmt(s):t("Rien de sélectionné");}
+
+
+/* ============================ CLÉ USB ============================ */
+let USBVOL=null;
+async function usbBox(){const b=$("usbBox");if(!b)return;let s={vols:[]};try{s=await api("/api/usb/status")}catch(e){}
+  b.innerHTML="";const c=el("div","gnote");
+  if(!s.vols.length){c.style.background="#FFF3E0";c.innerHTML="<b>"+t("Aucune clé détectée.")+"</b><br>"+t("Branche la clé avec un adaptateur OTG, attends 5 secondes, puis touche ACTUALISER.");b.append(c);
+    const r=el("div","row");const x=el("button","btn go","🔄 "+t("ACTUALISER"));x.style.flex="1";x.onclick=usbBox;r.append(x);b.append(r);USBVOL=null;return}
+  s.vols.forEach((v,i)=>{const d=el("label","ck row");const r=el("input");r.type="radio";r.name="usbv";r.checked=(USBVOL?USBVOL===v.p:i===0);r.disabled=!v.w;r.onchange=()=>{USBVOL=v.p};if(r.checked)USBVOL=v.p;
+    d.append(r);d.append(" 💾 "+v.n+" — "+fmt(v.free)+" "+t("libres")+" / "+fmt(v.total)+(v.fs?" ("+v.fs+")":"")+(v.w?"":" ⚠ "+t("écriture refusée")));b.append(d)});
+  if(!s.vols.some(v=>v.w)){const w=el("div","gnote",t("La clé est vue mais Android refuse d'y écrire. Vérifie que « Accès à tous les fichiers » est autorisé et que la clé n'est pas en lecture seule."));w.style.background="#FFEBEE";b.append(w)}}
+function askUsb(){const n=SEL.size;if(!n)return;if(!USBVOL){modal("warn",t("Pas de clé"),t("Aucune clé utilisable. Branche-la puis touche ACTUALISER."),[[t("FERMER"),"ok",closeModal]]);return}
+  let s=0;SEL.forEach(v=>s+=v);
+  modal("ok",t("Copier vers la clé ?"),n+" "+t("fichiers")+" — <b>"+fmt(s)+"</b><br>"+t("Copie vérifiée dans le dossier SAUVEGARDE_TELEPHONE de la clé. Rien n'est effacé du téléphone pour l'instant. Garde l'écran allumé et ne débranche pas la clé."),
+   [[t("ANNULER"),"dis",closeModal],[t("COPIER"),"ok",doUsb]])}
+async function doUsb(){closeModal();const r=await api("/api/usb/copy",{paths:[...SEL.keys()],vol:USBVOL});if(!r.ok){modal("warn",t("Impossible"),t("Une analyse est déjà en cours ou la clé a disparu."),[[t("FERMER"),"ok",closeModal]]);return}
+  $("btnStop").disabled=false;JOB={running:true,pct:0,elapsed:0,msg:"",kind:"usb"};setBanner("run");clearInterval(POLL);POLL=setInterval(pollJob,500);pollJob()}
+function usbDoneView(box){const R=RES;const c=el("div","crumb");
+  c.append(el("b","",R.copied+" "+t("copiés")+" · "+R.skipped+" "+t("déjà sur la clé")+" · "+R.nfailed+" "+t("échec(s)")));box.append(c);
+  const g=el("div","gnote");g.innerHTML=t("Dossier sur la clé :")+" <code>"+R.dest+"</code>";box.append(g);
+  if(R.nfailed){const f=el("div","gnote");f.style.background="#FFEBEE";f.innerHTML="<b>"+t("Non copiés (restent sur le téléphone) :")+"</b><br>"+R.failed.map(x=>x[0].split("/").pop()+" — "+x[1]).join("<br>");box.append(f)}
+  if(R.verified.length){const b=el("button","btn ok","♻ "+t("LIBÉRER LA PLACE")+" : "+R.verified.length+" "+t("fichiers")+" ("+fmt(R.vsize)+")");b.style.cssText="width:100%;margin:10px 0";
+    b.onclick=()=>{SEL.clear();R.verified.forEach(p=>SEL.set(p,0));R.verified.length&&api("/api/storage");
+      modal("warn",t("Libérer la place ?"),R.verified.length+" "+t("fichiers copiés et vérifiés sur la clé")+" — <b>"+fmt(R.vsize)+"</b><br>"+t("Ils seront mis dans la corbeille du nettoyage (récupérables). La place est vraiment libérée quand tu vides la corbeille."),
+       [[t("PAS MAINTENANT"),"dis",()=>{SEL.clear();closeModal()}],[t("À LA CORBEILLE"),"ok",()=>doDelete("trash")]])};box.append(b)}}
+
+
+/* ============================ ENVOYER / ALLEGER / ACCUEIL ============================ */
+function sendPanel(){return `<h2>${t("Envoyer ses photos et vidéos ailleurs")}</h2>
+ <div class="grp"><div class="gh"><b>💻 ${t("Vers ton PC, en Wi-Fi")}</b></div><div class="gnote">${t("Le téléphone et le PC doivent être sur le même Wi-Fi. Tu ouvres l'adresse affichée dans le navigateur du PC et tu télécharges un dossier entier en ZIP. Lien valable 1 heure, lecture seule.")}</div>
+  <div id="shareBox" style="padding:8px"></div></div>
+ <div class="grp"><div class="gh"><b>☁ ${t("Vers le cloud (Google Photos)")}</b></div><div class="gnote">${t("1) Ouvre Google Photos. 2) Active la sauvegarde. 3) Quand tout est envoyé : touche ton portrait en haut à droite › « Libérer de l'espace ». Google n'efface que ce qui est bien sauvegardé.")}</div>
+  <div style="padding:8px"><a class="btn go" style="display:block;text-align:center;text-decoration:none" href="open://com.google.android.apps.photos">☁ ${t("OUVRIR GOOGLE PHOTOS")}</a></div></div>
+ <div class="grp"><div class="gh"><b>📱 ${t("Applis dont tu ne te sers plus")}</b></div><div class="gnote">${t("Android sait quelles applis sont rarement utilisées. Ouvre la liste, trie par taille ou par dernière utilisation, puis désinstalle toi-même celles dont tu n'as plus besoin.")}</div>
+  <div style="padding:8px"><a class="btn go" style="display:block;text-align:center;text-decoration:none" href="open://apps">📱 ${t("OUVRIR LA LISTE DES APPLIS")}</a></div></div>`}
+async function shareBox(){const b=$("shareBox");if(!b)return;const s=await api("/api/share/status");b.innerHTML="";
+  if(s.on){const u=el("div","gnote");u.style.cssText="background:#E8F5E9;font-size:20px;word-break:break-all";u.innerHTML="<b>"+t("Sur le PC, ouvre :")+"</b><br><code>"+s.url+"</code>";b.append(u);
+    const x=el("button","btn stop","⏹ "+t("ARRÊTER LE PARTAGE"));x.style.width="100%";x.onclick=async()=>{await api("/api/share/stop",{});shareBox()};b.append(x)}
+  else{const x=el("button","btn go","📡 "+t("DÉMARRER LE PARTAGE"));x.style.width="100%";x.onclick=async()=>{const r=await api("/api/share/start",{});if(!r.ok){b.append(el("div","gnote",r.err||"Erreur"));return}shareBox()};b.append(x)}}
+function askShrink(){const n=SEL.size;if(!n)return;let s=0;SEL.forEach(v=>s+=v);
+  modal("warn",t("Alléger ces photos ?"),n+" "+t("photos")+" — "+fmt(s)+"<br>"+t("Gain attendu : environ la moitié. Les originaux vont à la corbeille du nettoyage (récupérables).")+"<br><br><label class='ck'><input type='checkbox' id='shrk'> "+t("Réduire aussi à 4000 px max (plus d'économie)")+"</label>",
+   [[t("ANNULER"),"dis",closeModal],[t("ALLÉGER"),"ok",doShrink]])}
+async function doShrink(){const ms=($("shrk")&&$("shrk").checked)?4000:0;closeModal();const r=await api("/api/shrink",{paths:[...SEL.keys()],q:85,maxside:ms});if(!r.ok)return;
+  $("btnStop").disabled=false;JOB={running:true,pct:0,elapsed:0,msg:"",kind:"shrink"};setBanner("run");clearInterval(POLL);POLL=setInterval(pollJob,500);pollJob()}
+function shrinkDoneView(box){const c=el("div","crumb");c.append(el("b","",RES.done+" "+t("photos allégées")+" — "+fmt(RES.saved)+" "+t("gagnés")));box.append(c);
+  box.append(el("div","gnote",t("Les originaux sont dans la corbeille : vide-la quand tu es sûr, pour récupérer la place.")));storage()}
+async function welcome(){let st={last_usb:0,used_pct:0};try{st=await api("/api/state")}catch(e){}
+  try{if(localStorage.getItem("nap_welcome")==="off")return}catch(e){}
+  let extra="";if(st.used_pct>=80)extra+="<br><b style='color:#C62828'>"+t("Ton téléphone est plein à")+" "+Math.round(st.used_pct)+" %.</b>";
+  if(!st.last_usb)extra+="<br>"+t("Aucune copie sur clé faite pour l'instant.");else{const d=Math.floor((Date.now()/1000-st.last_usb)/86400);extra+="<br>"+t("Dernière copie sur clé :")+" "+d+" "+t("jour(s)")+(d>30?" — "+t("pense à en refaire une."):".")}
+  modal("ok","🏠 "+t("Bienvenue"),t("Cet outil sert à redonner de la place et de la vitesse à ton téléphone : supprimer ce qui ne sert à rien (doublons, caches, résidus), ou garder tes photos et vidéos en les déplaçant vers une clé USB, ton PC ou le cloud.")+"<br><br>"+t("Rien n'est effacé sans ton accord, et tout passe d'abord par la corbeille.")+extra+"<br><br><label class='ck'><input type='checkbox' id='wl'> "+t("Ne plus afficher ce message")+"</label>",
+   [[t("C'EST PARTI"),"ok",()=>{try{if($("wl")&&$("wl").checked)localStorage.setItem("nap_welcome","off")}catch(e){}closeModal()}]])}
+
+
+function askAuto(){modal("ok",t("Nettoyage automatique sûr"),t("Efface les miniatures de galerie, les caches, les fichiers temporaires de plus d'un jour et les dossiers vides. Tout cela se reconstruit tout seul. Tes photos, vidéos et documents ne sont pas touchés."),
+  [[t("ANNULER"),"dis",closeModal],[t("NETTOYER"),"ok",doAuto]])}
+async function doAuto(){closeModal();const r=await api("/api/scan",{kind:"auto"});if(!r.ok)return;RES=null;SEL.clear();renderResult();updSel();$("btnStop").disabled=false;
+  JOB={running:true,pct:0,elapsed:0,msg:"",kind:"auto"};setBanner("run");clearInterval(POLL);POLL=setInterval(pollJob,500);pollJob()}
+function autoDoneView(box){const c=el("div","crumb");c.append(el("b","","🧹 "+fmt(RES.freed)+" "+t("libérés")+" — "+RES.done+" "+t("éléments")));box.append(c);storage()}
+function allBar(box){const r=el("div","row");const a=el("button","btn go","☑ "+t("TOUT COCHER"));a.style.flex="1";
+  a.onclick=()=>{RES.groups.forEach(g=>g.items.forEach(i=>SEL.set(i.p,i.s)));renderResult();updSel()};
+  const d=el("button","btn dis","☐ "+t("TOUT DÉCOCHER"));d.style.flex="1";d.onclick=()=>{SEL.clear();renderResult();updSel()};r.append(a,d);box.append(r)}
 
 /* ============================ suppression ============================ */
 function closeModal(){$("modal").classList.remove("show")}
@@ -372,7 +481,7 @@ async function loadTrash(){const r=await api("/api/trash");const box=$("trashLis
 async function storage(){try{const s=await api("/api/storage");STOREPIL=s.pil;const pc=s.total?100*s.used/s.total:0;$("sbar").style.width=pc+"%";$("sbar").style.background=pc>90?"var(--red)":pc>75?"var(--orange)":"var(--green)";
   $("sused").textContent=t("Utilisé")+" "+fmt(s.used)+" "+t("sur")+" "+fmt(s.total);$("sfree").textContent=t("Libre")+" "+fmt(s.free)}catch(e){}}
 document.documentElement.lang=LANG;
-applyLang();renderTabs();renderPanel();storage();
+applyLang();renderTabs();renderPanel();storage();setTimeout(welcome,400);
 </script>
 </body>
 </html>
