@@ -378,8 +378,34 @@ USB_BASE = os.environ.get("NAP_USB_BASE", "/storage")
 USB_DIR = "SAUVEGARDE_TELEPHONE"
 
 
+USB_DIAG = []
+
+
+def sm_volumes():
+    """Volumes vus par Android lui-meme (StorageManager), si l'appli tourne sous Chaquopy."""
+    out = []
+    try:
+        from java import jclass
+        app_ctx = jclass("com.chaquo.python.Python").getPlatform().getApplication()
+        sm = app_ctx.getSystemService("storage")
+        vols = sm.getStorageVolumes()
+        for i in range(vols.size()):
+            v = vols.get(i)
+            try:
+                d = v.getDirectory()
+                path = d.getAbsolutePath() if d is not None else ""
+            except Exception:
+                path = ""
+            out.append({"path": path, "state": str(v.getState()), "removable": bool(v.isRemovable()),
+                        "primary": bool(v.isPrimary()), "uuid": str(v.getUuid()), "desc": str(v.getDescription(app_ctx))})
+    except Exception as e:
+        USB_DIAG.append("StorageManager indisponible : %s" % str(e)[:80])
+    return out
+
+
 def usb_volumes():
-    """Cles / cartes branchees : /storage/<UUID> (hors stockage interne)."""
+    """Cles / cartes branchees : /storage/<UUID> (hors stockage interne) + volumes vus par Android."""
+    del USB_DIAG[:]
     out = []
     fstypes = {}
     try:
@@ -389,20 +415,34 @@ def usb_volumes():
                 if len(a) > 2:
                     fstypes[a[1]] = a[2]
     except Exception:
-        pass
+        USB_DIAG.append("Liste des montages illisible")
+    paths = []
     try:
         names = sorted(os.listdir(USB_BASE))
-    except Exception:
+        USB_DIAG.append("/storage contient : " + ", ".join(names))
+    except Exception as e:
         names = []
+        USB_DIAG.append("/storage illisible : %s" % str(e)[:60])
     for n in names:
         if n in ("emulated", "self") or n.startswith("."):
             continue
-        p = os.path.join(USB_BASE, n)
+        paths.append(os.path.join(USB_BASE, n))
+    for sv in sm_volumes():
+        USB_DIAG.append("Android voit : %s | %s | état %s | %s" % (sv["desc"], sv["path"] or "(pas de chemin)", sv["state"],
+                                                                 "amovible" if sv["removable"] else "interne"))
+        if sv["primary"] or not sv["removable"] or not sv["path"]:
+            continue
+        if sv["state"] != "mounted":
+            USB_DIAG.append("→ la clé est vue mais pas « montée » (état : %s) : format non pris en charge (NTFS ?) ou clé à retirer et rebrancher." % sv["state"])
+            continue
+        if sv["path"] not in paths:
+            paths.append(sv["path"])
+    for p in paths:
         if not os.path.isdir(p):
             continue
-        v = {"p": p, "n": n, "fs": "", "free": 0, "total": 0, "w": False}
+        v = {"p": p, "n": os.path.basename(p), "fs": "", "free": 0, "total": 0, "w": False}
         for k, ft in fstypes.items():
-            if k.endswith("/" + n):
+            if k.endswith("/" + v["n"]):
                 v["fs"] = ft
         try:
             st = os.statvfs(p)
@@ -416,8 +456,9 @@ def usb_volumes():
                 f.write("ok")
             os.remove(tp)
             v["w"] = True
-        except Exception:
+        except Exception as e:
             v["w"] = False
+            USB_DIAG.append("Écriture refusée sur %s : %s" % (p, str(e)[:60]))
         out.append(v)
     return out
 
@@ -1180,7 +1221,8 @@ def api_scan():
 
 @app.route("/api/usb/status")
 def api_usb_status():
-    return jsonify({"vols": usb_volumes(), "dir": USB_DIR})
+    vols = usb_volumes()
+    return jsonify({"vols": vols, "dir": USB_DIR, "diag": list(USB_DIAG)})
 
 
 @app.route("/api/usb/copy", methods=["POST"])
