@@ -373,6 +373,585 @@ def scan_photos(blur_thr=45.0, small_mp=0.3):
     ], "pil": HAVE_PIL, "stopped": STOP.is_set()}
 
 
+# ---------------------------------------------------------------- CLE USB (photos et videos)
+USB_BASE = os.environ.get("NAP_USB_BASE", "/storage")
+USB_DIR = "SAUVEGARDE_TELEPHONE"
+
+
+def usb_volumes():
+    """Cles / cartes branchees : /storage/<UUID> (hors stockage interne)."""
+    out = []
+    fstypes = {}
+    try:
+        with open("/proc/mounts") as f:
+            for ln in f:
+                a = ln.split()
+                if len(a) > 2:
+                    fstypes[a[1]] = a[2]
+    except Exception:
+        pass
+    try:
+        names = sorted(os.listdir(USB_BASE))
+    except Exception:
+        names = []
+    for n in names:
+        if n in ("emulated", "self") or n.startswith("."):
+            continue
+        p = os.path.join(USB_BASE, n)
+        if not os.path.isdir(p):
+            continue
+        v = {"p": p, "n": n, "fs": "", "free": 0, "total": 0, "w": False}
+        for k, ft in fstypes.items():
+            if k.endswith("/" + n):
+                v["fs"] = ft
+        try:
+            st = os.statvfs(p)
+            v["free"] = st.f_bavail * st.f_frsize
+            v["total"] = st.f_blocks * st.f_frsize
+        except Exception:
+            pass
+        try:                                         # test d'ecriture reel
+            tp = os.path.join(p, ".nap_test")
+            with open(tp, "w") as f:
+                f.write("ok")
+            os.remove(tp)
+            v["w"] = True
+        except Exception:
+            v["w"] = False
+        out.append(v)
+    return out
+
+
+DOC_EXT = (".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".txt", ".rtf", ".epub", ".csv")
+MAIL_EXT = (".eml", ".msg", ".mbox", ".pst", ".vcf", ".ics")
+MAIL_WORDS = ("mail", "courrier", "outlook", "thunderbird", "k9", "pieces jointes", "pièces jointes", "attachment")
+CAT_TITLE = {"v": "🎞 Vidéos", "p": "🖼 Photos", "d": "📄 Documents", "m": "✉ Courrier et pièces jointes"}
+
+
+def media_cat(path_lower):
+    n = path_lower
+    if n.endswith(MAIL_EXT):
+        return "m"
+    if n.endswith(DOC_EXT):
+        return "m" if any(w in n for w in MAIL_WORDS) else "d"
+    if n.endswith(IMG_EXT):
+        return "p"
+    if n.endswith(VID_EXT):
+        return "v"
+    return None
+
+
+def scan_media(cats=("p", "v"), min_mb=0, age_days=0):
+    now = time.time()
+    cats = set(cats or ("p", "v"))
+    by = {"v": [], "p": [], "d": [], "m": []}
+    n = 0
+    for e in walk_files(ROOT, skip=lambda d: is_android_private(d) or os.path.basename(d) == ".thumbnails", stop=STOP):
+        c = media_cat(e.path.lower())
+        if c is None or c not in cats:
+            continue
+        try:
+            st = e.stat()
+        except Exception:
+            continue
+        if st.st_size <= 0:
+            continue
+        if age_days and now - st.st_mtime < age_days * 86400:
+            continue
+        if min_mb and st.st_size < min_mb * 1048576:
+            continue
+        it = item(e.path, st)
+        if it:
+            by[c].append(it)
+            n += 1
+            if n % 500 == 0:
+                set_prog(None, "%d fichiers" % n)
+            if n >= 80000:
+                break
+    groups = []
+    for c in ("v", "p", "d", "m"):
+        if c in cats:
+            its = sorted(by[c], key=lambda x: -x["m"])
+            groups.append({"k": CAT_TITLE[c], "items": its, "sel": False, "thumbs": True,
+                           "count": len(its), "total": sum(i["s"] for i in its)})
+    return {"type": "list", "groups": groups, "usb": True, "stopped": STOP.is_set()}
+
+
+# ---------------------------------------------------------------- NETTOYAGE AUTOMATIQUE SUR (technique uniquement)
+def auto_clean():
+    """Efface sans question ce qui est purement technique et se reconstruit seul :
+    miniatures de galerie, dossiers cache/temp, vrais fichiers temporaires (> 1 jour), dossiers vides.
+    Jamais : photos, videos, documents, .bak, .apk, restes d'applis."""
+    res = scan_junk()
+    now = time.time()
+    safe_tmp = re.compile(r"\.(tmp|temp|crdownload|cache|dmp|log)$", re.I)
+    freed, done, errs = 0, 0, 0
+    todo, empty = [], []
+    for g in res["groups"]:
+        if g["k"] in ("g_thumb", "g_cache"):
+            todo += g["items"]
+        elif g["k"] == "g_tmp":
+            todo += [i for i in g["items"] if safe_tmp.search(i["n"]) and now - i["m"] > 86400]
+        elif g["k"] == "g_trashed":
+            todo += [i for i in g["items"] if now - i["m"] > 30 * 86400]
+        elif g["k"] == "g_empty":
+            empty += g["items"]
+    n = max(1, len(todo))
+    for i, it in enumerate(todo):
+        if STOP.is_set():
+            break
+        if i % 50 == 0:
+            set_prog(100.0 * i / n, it["n"])
+        p = it["p"]
+        if not inside_root(p) or in_trash(p) or not os.path.isfile(p):
+            continue
+        try:
+            sz = os.path.getsize(p)
+            os.remove(p)
+            freed += sz
+            done += 1
+        except Exception:
+            errs += 1
+    for it in sorted(empty, key=lambda x: -len(x["p"])):
+        try:
+            if inside_root(it["p"]) and os.path.isdir(it["p"]) and not os.listdir(it["p"]):
+                os.rmdir(it["p"])
+                done += 1
+        except Exception:
+            errs += 1
+    return {"type": "autodone", "freed": freed, "done": done, "nerr": errs, "stopped": STOP.is_set()}
+
+
+def _same(a, b):
+    """Verification : meme taille + debut et fin identiques."""
+    sa, sb = os.path.getsize(a), os.path.getsize(b)
+    if sa != sb:
+        return False
+    with open(a, "rb") as fa, open(b, "rb") as fb:
+        if fa.read(262144) != fb.read(262144):
+            return False
+        if sa > 524288:
+            fa.seek(sa - 262144)
+            fb.seek(sa - 262144)
+            if fa.read(262144) != fb.read(262144):
+                return False
+    return True
+
+
+def usb_copy(paths, volpath):
+    vols = {v["p"]: v for v in usb_volumes()}
+    v = vols.get(volpath)
+    if not v or not v["w"]:
+        raise RuntimeError("Clé USB introuvable ou non accessible en écriture.")
+    dest_root = os.path.join(volpath, USB_DIR)
+    fat = v["fs"].lower() in ("vfat", "msdos", "fat32", "fat")
+    todo, total = [], 0
+    for p in paths:
+        rp = os.path.realpath(p)
+        if inside_root(rp) and not in_trash(rp) and os.path.isfile(rp):
+            todo.append(rp)
+            total += os.path.getsize(rp)
+    # place necessaire = ce qui n'est pas deja sur la cle
+    need = 0
+    for rp in todo:
+        dst = os.path.join(dest_root, os.path.relpath(rp, ROOT))
+        if not (os.path.isfile(dst) and os.path.getsize(dst) == os.path.getsize(rp)):
+            need += os.path.getsize(rp)
+    if need > v["free"] - 50 * 1048576:
+        raise RuntimeError("Pas assez de place sur la clé : il faut %.1f Go, il reste %.1f Go." % (need / 1e9, v["free"] / 1e9))
+    done_b, copied, skipped, failed, verified = 0, 0, 0, [], []
+    for i, rp in enumerate(todo):
+        if STOP.is_set():
+            break
+        size = os.path.getsize(rp)
+        set_prog(100.0 * done_b / max(1, total), "%d/%d  %s" % (i + 1, len(todo), os.path.basename(rp)))
+        dst = os.path.join(dest_root, os.path.relpath(rp, ROOT))
+        try:
+            if fat and size >= 4 * 1024 ** 3 - 1:
+                failed.append([rp, "trop gros pour une clé FAT32 (4 Go max)"])
+                done_b += size
+                continue
+            if os.path.isfile(dst) and _same(rp, dst):
+                skipped += 1
+                verified.append(rp)
+                done_b += size
+                continue
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            tmp = dst + ".part"
+            with open(rp, "rb") as fi, open(tmp, "wb") as fo:
+                while True:
+                    if STOP.is_set():
+                        raise InterruptedError("arrêt")
+                    buf = fi.read(4 * 1048576)
+                    if not buf:
+                        break
+                    fo.write(buf)
+                    done_b += len(buf)
+                    set_prog(100.0 * done_b / max(1, total))
+                fo.flush()
+                try:
+                    os.fsync(fo.fileno())
+                except Exception:
+                    pass
+            os.replace(tmp, dst)
+            try:
+                os.utime(dst, (os.path.getatime(rp), os.path.getmtime(rp)))
+            except Exception:
+                pass
+            if _same(rp, dst):
+                copied += 1
+                verified.append(rp)
+            else:
+                failed.append([rp, "copie différente de l'original"])
+        except InterruptedError:
+            try:
+                os.remove(dst + ".part")
+            except Exception:
+                pass
+            break
+        except Exception as e:
+            failed.append([rp, str(e)])
+            try:
+                os.remove(dst + ".part")
+            except Exception:
+                pass
+    vsize = 0
+    for rp in verified:
+        try:
+            vsize += os.path.getsize(rp)
+        except Exception:
+            pass
+    if verified:
+        state_set(last_usb=int(time.time()))
+    return {"type": "usbdone", "copied": copied, "skipped": skipped, "failed": failed[:30], "nfailed": len(failed),
+            "verified": verified, "vsize": vsize, "dest": dest_root, "stopped": STOP.is_set(), "total": len(todo)}
+
+
+# ---------------------------------------------------------------- RAFALES / PHOTOS SIMILAIRES
+def dhash(path):
+    im = Image.open(path)
+    im.draft("L", (160, 160))
+    im = ImageOps.exif_transpose(im).convert("L").resize((9, 8))
+    px = list(im.getdata())
+    bits = 0
+    for r in range(8):
+        for c in range(8):
+            bits = (bits << 1) | (1 if px[r * 9 + c] > px[r * 9 + c + 1] else 0)
+    return bits
+
+
+def scan_similar(gap_s=30, maxdist=8):
+    if not HAVE_PIL:
+        return {"type": "list", "groups": [], "pil": False}
+    files = []
+    for e in walk_files(ROOT, skip=lambda d: is_android_private(d) or os.path.basename(d) == ".thumbnails", stop=STOP):
+        if e.name.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+            try:
+                st = e.stat()
+                if st.st_size > 30 * 1024:
+                    files.append((st.st_mtime, e.path, st))
+            except Exception:
+                pass
+    files.sort()
+    files = files[-12000:]
+    n = max(1, len(files))
+    groups, cur = [], []
+    prev_t = 0
+    for i, (mt, p, st) in enumerate(files):
+        if STOP.is_set():
+            break
+        if i % 25 == 0:
+            set_prog(100.0 * i / n, os.path.basename(p))
+        try:
+            h = dhash(p)
+        except Exception:
+            continue
+        if cur and mt - prev_t <= gap_s and bin(cur[0][0] ^ h).count("1") <= maxdist:
+            cur.append((h, p, st))
+        else:
+            if len(cur) >= 2:
+                groups.append(cur)
+            cur = [(h, p, st)]
+        prev_t = mt
+    if len(cur) >= 2:
+        groups.append(cur)
+    out = []
+    for g in groups[-400:][::-1]:
+        its, best, bs = [], None, -1
+        for h, p, st in g:
+            it = item(p, st)
+            if not it:
+                continue
+            try:
+                sc = blur_score(p)
+            except Exception:
+                sc = 0
+            it["_sc"] = sc
+            if sc > bs:
+                bs, best = sc, it
+            its.append(it)
+        if len(its) < 2:
+            continue
+        best["x"] = "⭐ meilleure"
+        for it in its:
+            it.pop("_sc", None)
+        when = time.strftime("%d/%m/%Y %H:%M", time.localtime(its[0]["m"]))
+        out.append({"k": "📸 %s — %d photos" % (when, len(its)), "items": its, "sel": False, "thumbs": True,
+                    "best": best["p"], "count": len(its), "total": sum(i["s"] for i in its)})
+    return {"type": "list", "groups": out, "pil": True, "stopped": STOP.is_set()}
+
+
+# ---------------------------------------------------------------- ALLEGER (re-compression JPEG, original en corbeille)
+def scan_heavy(min_mb=3):
+    items = []
+    for e in walk_files(ROOT, skip=lambda d: is_android_private(d) or os.path.basename(d) == ".thumbnails", stop=STOP):
+        if e.name.lower().endswith((".jpg", ".jpeg")):
+            try:
+                st = e.stat()
+            except Exception:
+                continue
+            if st.st_size >= min_mb * 1048576:
+                it = item(e.path, st)
+                if it:
+                    items.append(it)
+    items.sort(key=lambda x: -x["s"])
+    items = items[:5000]
+    return {"type": "list", "groups": [{"k": "📷 Photos lourdes (JPEG)", "items": items, "sel": False, "thumbs": True,
+                                        "count": len(items), "total": sum(i["s"] for i in items)}], "stopped": STOP.is_set()}
+
+
+def shrink_images(paths, quality=85, maxside=0):
+    if not HAVE_PIL:
+        raise RuntimeError("Pillow absent")
+    batch = datetime.now().strftime("%Y%m%d_%H%M%S")
+    bdir = os.path.join(TRASH, batch)
+    manifest, saved, done, errs = [], 0, 0, []
+    todo = [os.path.realpath(p) for p in paths]
+    todo = [p for p in todo if inside_root(p) and not in_trash(p) and p.lower().endswith((".jpg", ".jpeg")) and os.path.isfile(p)]
+    for i, p in enumerate(todo):
+        if STOP.is_set():
+            break
+        set_prog(100.0 * i / max(1, len(todo)), os.path.basename(p))
+        tmp = p + ".nap_tmp"
+        try:
+            old = os.path.getsize(p)
+            stt = os.stat(p)
+            with Image.open(p) as im:
+                exif = im.info.get("exif")
+                icc = im.info.get("icc_profile")
+                im2 = im
+                if maxside and max(im.size) > maxside:
+                    im2 = im.copy()
+                    im2.thumbnail((maxside, maxside))
+                kw = {"quality": quality, "optimize": True}
+                if exif:
+                    kw["exif"] = exif
+                if icc:
+                    kw["icc_profile"] = icc
+                im2.convert("RGB").save(tmp, "JPEG", **kw)
+            new = os.path.getsize(tmp)
+            if new > old * 0.85:                     # gain trop faible : on laisse l'original
+                os.remove(tmp)
+                continue
+            dst = os.path.join(bdir, os.path.relpath(p, ROOT))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.move(p, dst)
+            os.replace(tmp, p)
+            os.utime(p, (stt.st_atime, stt.st_mtime))
+            manifest.append({"src": p, "dst": dst})
+            saved += old - new
+            done += 1
+        except Exception as e:
+            errs.append([p, str(e)])
+            try:
+                os.remove(tmp)
+            except Exception:
+                pass
+    if manifest:
+        try:
+            with open(os.path.join(bdir, "_manifest.json"), "w", encoding="utf-8") as f:
+                json.dump(manifest, f)
+        except Exception:
+            pass
+    return {"type": "shrinkdone", "done": done, "saved": saved, "errors": errs[:20], "nerr": len(errs), "total": len(todo)}
+
+
+# ---------------------------------------------------------------- ENVOYER VERS LE PC (Wi-Fi)
+import socket
+import secrets
+import zipfile
+from html import escape
+from urllib.parse import quote
+from werkzeug.serving import make_server
+
+SHARE = {"srv": None, "token": "", "url": "", "t0": 0.0}
+share_app = Flask("share", static_folder=None)
+MEDIA_EXT = IMG_EXT + VID_EXT
+
+
+def local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("10.255.255.255", 1))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return ""
+
+
+def _share_ok(token):
+    if not SHARE["srv"] or token != SHARE["token"] or time.time() - SHARE["t0"] > 3600:
+        abort(404)
+
+
+def _share_dirs():
+    dirs = {}
+    for e in walk_files(ROOT, skip=lambda d: is_android_private(d) or os.path.basename(d) == ".thumbnails"):
+        if e.name.lower().endswith(MEDIA_EXT):
+            d = os.path.dirname(e.path)
+            try:
+                dirs.setdefault(d, [0, 0])
+                dirs[d][0] += 1
+                dirs[d][1] += e.stat().st_size
+            except Exception:
+                pass
+    return dirs
+
+
+def _page(title, body):
+    return ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+            "<title>%s</title><style>body{font:16px system-ui;max-width:900px;margin:20px auto;padding:0 12px}"
+            "a{color:#1565C0}li{margin:6px 0}.b{display:inline-block;background:#2E7D32;color:#fff;padding:8px 14px;"
+            "border-radius:8px;text-decoration:none;font-weight:700}</style><h1>%s</h1>%s" % (escape(title), escape(title), body))
+
+
+@share_app.route("/<token>/")
+def share_home(token):
+    _share_ok(token)
+    dirs = _share_dirs()
+    li = "".join("<li><a href='/%s/d?p=%s'>%s</a> — %d fichiers, %.1f Go</li>" % (
+        token, quote(os.path.relpath(d, ROOT)), escape(os.path.relpath(d, ROOT)), v[0], v[1] / 1e9)
+        for d, v in sorted(dirs.items(), key=lambda x: -x[1][1]))
+    return _page("Photos et vidéos du téléphone", "<p>Choisis un dossier, puis télécharge-le en ZIP ou fichier par fichier.</p><ul>%s</ul>" % li)
+
+
+def _safe_dir(rel):
+    d = os.path.realpath(os.path.join(ROOT, rel))
+    if not (inside_root(d) and os.path.isdir(d)) or in_trash(d) or is_android_private(d):
+        abort(404)
+    return d
+
+
+@share_app.route("/<token>/d")
+def share_dir(token):
+    _share_ok(token)
+    rel = request.args.get("p", "")
+    d = _safe_dir(rel)
+    fl = sorted(f for f in os.listdir(d) if f.lower().endswith(MEDIA_EXT) and os.path.isfile(os.path.join(d, f)))
+    li = "".join("<li><a href='/%s/f?p=%s'>%s</a> (%.1f Mo)</li>" % (
+        token, quote(os.path.join(rel, f)), escape(f), os.path.getsize(os.path.join(d, f)) / 1048576) for f in fl)
+    return _page(rel or "/", "<p><a class=b href='/%s/z?p=%s'>⬇ TOUT EN ZIP (%d fichiers)</a></p><p><a href='/%s/'>← dossiers</a></p><ul>%s</ul>" % (
+        token, quote(rel), len(fl), token, li))
+
+
+@share_app.route("/<token>/f")
+def share_file(token):
+    _share_ok(token)
+    p = os.path.realpath(os.path.join(ROOT, request.args.get("p", "")))
+    if not (inside_root(p) and os.path.isfile(p) and p.lower().endswith(MEDIA_EXT)) or in_trash(p) or is_android_private(os.path.dirname(p)):
+        abort(404)
+    return send_file(p, as_attachment=True)
+
+
+class _Pipe:
+    def __init__(self):
+        self.buf = []
+        self.pos = 0
+
+    def write(self, b):
+        self.buf.append(bytes(b))
+        self.pos += len(b)
+        return len(b)
+
+    def tell(self):
+        return self.pos
+
+    def flush(self):
+        pass
+
+
+@share_app.route("/<token>/z")
+def share_zip(token):
+    _share_ok(token)
+    d = _safe_dir(request.args.get("p", ""))
+    fl = sorted(f for f in os.listdir(d) if f.lower().endswith(MEDIA_EXT) and os.path.isfile(os.path.join(d, f)))
+
+    def gen():
+        pipe = _Pipe()
+        z = zipfile.ZipFile(pipe, "w", zipfile.ZIP_STORED, allowZip64=True)
+        for f in fl:
+            with z.open(zipfile.ZipInfo.from_file(os.path.join(d, f), f), "w", force_zip64=True) as zf, open(os.path.join(d, f), "rb") as fi:
+                while True:
+                    b = fi.read(1048576)
+                    if not b:
+                        break
+                    zf.write(b)
+                    for x in pipe.buf:
+                        yield x
+                    pipe.buf = []
+        z.close()
+        for x in pipe.buf:
+            yield x
+    name = (os.path.basename(d) or "photos") + ".zip"
+    from flask import Response
+    return Response(gen(), mimetype="application/zip", headers={"Content-Disposition": "attachment; filename*=UTF-8''" + quote(name)})
+
+
+def share_start():
+    share_stop()
+    token = secrets.token_urlsafe(6)
+    port = 8878
+    srv = make_server("0.0.0.0", port, share_app, threaded=True)
+    SHARE.update(srv=srv, token=token, t0=time.time())
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    ip = local_ip()
+    SHARE["url"] = "http://%s:%d/%s/" % (ip or "ADRESSE-DU-TELEPHONE", port, token)
+    return SHARE["url"]
+
+
+def share_stop():
+    s = SHARE.get("srv")
+    if s:
+        try:
+            threading.Thread(target=s.shutdown, daemon=True).start()
+        except Exception:
+            pass
+    SHARE.update(srv=None, token="", url="")
+
+
+# ---------------------------------------------------------------- memoire de la derniere copie sur cle
+STATE_FILE = os.path.join(HERE, "nap_state.json")
+
+
+def state_get():
+    try:
+        with open(STATE_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def state_set(**kw):
+    s = state_get()
+    s.update(kw)
+    try:
+        with open(STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(s, f)
+    except Exception:
+        pass
+
+
 def installed_packages():
     for cmd in (["pm", "list", "packages"], ["cmd", "package", "list", "packages"]):
         try:
@@ -589,10 +1168,71 @@ def api_scan():
           "dups": lambda: run_job("dups", scan_dups, d.get("min_kb", 50)),
           "social": lambda: run_job("social", scan_social, d.get("age", 60), bool(d.get("sent"))),
           "photos": lambda: run_job("photos", scan_photos, float(d.get("blur", 45))),
-          "junk": lambda: run_job("junk", scan_junk)}.get(kind)
+          "junk": lambda: run_job("junk", scan_junk),
+          "similar": lambda: run_job("similar", scan_similar),
+          "heavy": lambda: run_job("heavy", scan_heavy, float(d.get("min_mb", 3))),
+          "media": lambda: run_job("media", scan_media, d.get("cats") or ["p", "v"], float(d.get("min_mb", 0)), int(d.get("age", 0))),
+          "auto": lambda: run_job("auto", auto_clean)}.get(kind)
     if not fn:
         return jsonify({"ok": False, "err": "kind"}), 400
     return jsonify({"ok": bool(fn())})
+
+
+@app.route("/api/usb/status")
+def api_usb_status():
+    return jsonify({"vols": usb_volumes(), "dir": USB_DIR})
+
+
+@app.route("/api/usb/copy", methods=["POST"])
+def api_usb_copy():
+    d = request.get_json(silent=True) or {}
+    paths = [p for p in d.get("paths", []) if isinstance(p, str)]
+    vol = d.get("vol", "")
+    if not paths or len(paths) > 100000 or vol not in [v["p"] for v in usb_volumes()]:
+        return jsonify({"ok": False}), 400
+    return jsonify({"ok": bool(run_job("usb", usb_copy, paths, vol))})
+
+
+@app.route("/api/share/start", methods=["POST"])
+def api_share_start():
+    try:
+        return jsonify({"ok": True, "url": share_start(), "ip": bool(local_ip())})
+    except Exception as e:
+        return jsonify({"ok": False, "err": str(e)})
+
+
+@app.route("/api/share/stop", methods=["POST"])
+def api_share_stop():
+    share_stop()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/share/status")
+def api_share_status():
+    on = bool(SHARE["srv"]) and time.time() - SHARE["t0"] <= 3600
+    return jsonify({"on": on, "url": SHARE["url"] if on else ""})
+
+
+@app.route("/api/state")
+def api_state():
+    s = state_get()
+    try:
+        st = os.statvfs(ROOT)
+        pc = 100.0 * (1 - st.f_bavail / max(1, st.f_blocks))
+    except Exception:
+        pc = 0
+    return jsonify({"last_usb": s.get("last_usb", 0), "used_pct": pc})
+
+
+@app.route("/api/shrink", methods=["POST"])
+def api_shrink():
+    d = request.get_json(silent=True) or {}
+    paths = [p for p in d.get("paths", []) if isinstance(p, str)]
+    if not paths or len(paths) > 20000:
+        return jsonify({"ok": False}), 400
+    q = max(60, min(95, int(d.get("q", 85))))
+    ms = int(d.get("maxside", 0))
+    return jsonify({"ok": bool(run_job("shrink", shrink_images, paths, q, ms))})
 
 
 @app.route("/api/job")
