@@ -38,7 +38,7 @@ import java.net.Socket;
  */
 public class MainActivity extends Activity {
 
-    static final int PORT = 8877;
+    static final int PORT = 8866;
     static final String URL = "http://127.0.0.1:" + PORT + "/?app=1";
 
     private WebView web;
