@@ -15,8 +15,8 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 header{background:#263238;color:#fff;padding:10px 12px 10px;position:sticky;top:0;z-index:20}
 .top{display:flex;align-items:center;gap:8px}
 .by{display:block;font-size:11px;font-weight:600;opacity:.8;letter-spacing:0;margin-top:1px}.by a{color:#FFCC80;text-decoration:none}
-.top h1{font-size:19px;margin:0;flex:1;letter-spacing:.3px}
-.lang{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:14px}
+.top h1{font-size:15px;margin:0;flex:1;letter-spacing:.3px}
+.lang{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 10px;font-weight:700;font-size:13px}
 .stor{margin-top:8px}
 .bar{height:16px;background:#CFD8DC;border-radius:8px;overflow:hidden}
 .bar>i{display:block;height:100%;background:var(--green);width:0}
@@ -99,7 +99,7 @@ input[type=checkbox]{width:26px;height:26px;accent-color:var(--blue);flex:none}
 </head>
 <body>
 <header>
-  <div class="top"><h1>🧹 NETTOYAGE ANDROID PRO<small class="by">par JM.DARGERE · <a id="igl" href="https://www.instagram.com/jean_michel_dargere/" target="_blank" rel="noopener">Instagram @jean_michel_dargere</a></small></h1><button class="lang" id="lang" onclick="toggleLang()">ENGLISH</button></div>
+  <div class="top"><h1>🧹 NETTOYAGE ANDROID PRO<small class="by">par JM.DARGERE · <a id="igl" href="https://www.instagram.com/jean_michel_dargere/" target="_blank" rel="noopener">Instagram @jean_michel_dargere</a></small></h1><button class="lang" id="plat" onclick="togglePlat()" title="Android / iPhone" style="margin-right:6px">🍎</button><button class="lang" id="lang" onclick="toggleLang()">ENGLISH</button></div>
   <div class="stor"><div class="bar"><i id="sbar"></i></div><small><span id="sused"></span><span id="sfree"></span></small></div>
 </header>
 
@@ -176,12 +176,117 @@ const EN={
 "« Système Android » est Android lui-même : il ne se vide pas sans accès root. Tout le reste peut être réduit.":"“Android system” is Android itself: it cannot be emptied without root access. Everything else can be reduced.",
 "Applis les plus lourdes":"Heaviest apps","DÉSINSTALLER LA SÉLECTION":"UNINSTALL SELECTION","Désinstaller ?":"Uninstall?","IRRÉVERSIBLE : l'appli et ses données seront supprimées.":"IRREVERSIBLE: the app and its data will be deleted.",
 "appli":"app","données":"data","cache":"cache","système (non désinstallable ici)":"system (cannot be uninstalled here)",
-"Analyse arrêtée : résultats partiels.":"Scan stopped: partial results.","Restauré":"Restored","Corbeille vidée":"Trash emptied","fichiers remis en place":"files put back"
+"Analyse arrêtée : résultats partiels.":"Scan stopped: partial results.","Restauré":"Restored","Corbeille vidée":"Trash emptied","fichiers remis en place":"files put back",
+"1) Ouvre Google Photos. 2) Active la sauvegarde. 3) Quand tout est envoyé : touche ton portrait en haut à droite › « Libérer de l'espace ». Google n'efface que ce qui est bien sauvegardé.":"1) Open Google Photos. 2) Turn on backup. 3) When everything is uploaded: tap your portrait at the top right › “Free up space”. Google only deletes what is safely backed up.",
+"ACTUALISER":"REFRESH",
+"ALLÉGER":"SHRINK",
+"ANALYSER EN DÉTAIL":"ANALYSE IN DETAIL",
+"ARRÊTER LE PARTAGE":"STOP SHARING",
+"Alléger ces photos ?":"Shrink these photos?",
+"Alléger les photos lourdes":"Shrink heavy photos",
+"Android sait quelles applis sont rarement utilisées. Ouvre la liste, trie par taille ou par dernière utilisation, puis désinstalle toi-même celles dont tu n'as plus besoin.":"Android knows which apps are rarely used. Open the list, sort by size or last use, then uninstall the ones you no longer need yourself.",
+"Applis dont tu ne te sers plus":"Apps you no longer use",
+"Aucune clé détectée.":"No key detected.",
+"Aucune clé utilisable. Branche-la puis touche ACTUALISER.":"No usable key. Plug it in, then tap REFRESH.",
+"Aucune copie sur clé faite pour l'instant.":"No copy to a key made yet.",
+"Bienvenue":"Welcome",
+"Branche la clé (adaptateur OTG). Choisis quoi proposer, regarde la liste, puis copie. Chaque fichier est vérifié ; rien n'est effacé du téléphone sans ton accord.":"Plug in the key (OTG adapter). Choose what to propose, look at the list, then copy. Every file is verified; nothing is erased from the phone without your consent.",
+"Branche la clé avec un adaptateur OTG, attends 5 secondes, puis touche ACTUALISER.":"Plug the key in with an OTG adapter, wait 5 seconds, then tap REFRESH.",
+"C'EST PARTI":"LET'S GO",
+"COPIER":"COPY",
+"Cet outil sert à redonner de la place et de la vitesse à ton téléphone : supprimer ce qui ne sert à rien (doublons, caches, résidus), ou garder tes photos et vidéos en les déplaçant vers une clé USB, ton PC ou le cloud.":"This tool gives your phone its space and speed back: delete what is useless (duplicates, caches, leftovers), or keep your photos and videos by moving them to a USB key, your PC or the cloud.",
+"Copie vérifiée dans le dossier SAUVEGARDE_TELEPHONE de la clé. Rien n'est effacé du téléphone pour l'instant. Garde l'écran allumé et ne débranche pas la clé.":"Verified copy into the SAUVEGARDE_TELEPHONE folder on the key. Nothing is erased from the phone for now. Keep the screen on and do not unplug the key.",
+"Copier vers la clé ?":"Copy to the key?",
+"Courrier et pièces jointes":"Mail and attachments",
+"Dernière copie sur clé :":"Last copy to a key:",
+"Documents (PDF, Word, Excel, texte…)":"Documents (PDF, Word, Excel, text…)",
+"Dossier sur la clé :":"Folder on the key:",
+"DÉMARRER LE PARTAGE":"START SHARING",
+"Détails techniques (à me montrer si ça ne marche pas)":"Technical details (show me if it does not work)",
+"Efface d'un coup, sans question, le purement technique : miniatures de galerie, caches, fichiers temporaires de plus d'un jour, dossiers vides. Jamais tes photos, vidéos, documents ou sauvegardes. Sans danger pour le téléphone.":"Erases in one go, without asking, the purely technical stuff: gallery thumbnails, caches, temporary files older than a day, empty folders. Never your photos, videos, documents or backups. Safe for the phone.",
+"Efface les miniatures de galerie, les caches, les fichiers temporaires de plus d'un jour et les dossiers vides. Tout cela se reconstruit tout seul. Tes photos, vidéos et documents ne sont pas touchés.":"Erases gallery thumbnails, caches, temporary files older than a day and empty folders. All of this rebuilds itself. Your photos, videos and documents are not touched.",
+"Ensuite, dans chaque liste : coche ce que tu veux, puis « VERS LA CLÉ » pour le garder ailleurs, ou « À LA CORBEILLE » pour le supprimer.":"Then, in each list: tick what you want, then “TO THE KEY” to keep it elsewhere, or “TO TRASH” to delete it.",
+"Envoyer ses photos et vidéos ailleurs":"Send your photos and videos elsewhere",
+"Gain attendu : environ la moitié. Les originaux vont à la corbeille du nettoyage (récupérables).":"Expected saving: about half. Originals go to the cleaning trash (recoverable).",
+"Ils seront mis dans la corbeille du nettoyage (récupérables). La place est vraiment libérée quand tu vides la corbeille.":"They will be put in the cleaning trash (recoverable). The space is really freed when you empty the trash.",
+"Impossible":"Not possible",
+"LIBÉRER LA PLACE":"FREE UP THE SPACE",
+"La clé est vue mais Android refuse d'y écrire. Vérifie que « Accès à tous les fichiers » est autorisé et que la clé n'est pas en lecture seule.":"The key is seen but Android refuses to write to it. Check that “All files access” is allowed and that the key is not read-only.",
+"Le téléphone et le PC doivent être sur le même Wi-Fi. Tu ouvres l'adresse affichée dans le navigateur du PC et tu télécharges un dossier entier en ZIP. Lien valable 1 heure, lecture seule.":"The phone and the PC must be on the same Wi-Fi. Open the address shown in the PC browser and download a whole folder as a ZIP. Link valid for 1 hour, read-only.",
+"Les originaux sont dans la corbeille : vide-la quand tu es sûr, pour récupérer la place.":"The originals are in the trash: empty it when you are sure, to get the space back.",
+"Libérer la place ?":"Free up the space?",
+"NETTOYAGE AUTOMATIQUE SÛR":"SAFE AUTOMATIC CLEANING",
+"NETTOYER":"CLEAN",
+"Ne plus afficher ce message":"Do not show this message again",
+"Nettoyage automatique sûr":"Safe automatic cleaning",
+"Non copiés (restent sur le téléphone) :":"Not copied (still on the phone):",
+"OUVRIR GOOGLE PHOTOS":"OPEN GOOGLE PHOTOS",
+"OUVRIR LA LISTE DES APPLIS":"OPEN THE APP LIST",
+"Options (âge, taille)":"Options (age, size)",
+"PAS MAINTENANT":"NOT NOW",
+"PROPOSER":"PROPOSE",
+"Pas de clé":"No key",
+"Photos":"Photos",
+"Photos de plus de :":"Photos larger than:",
+"Photos et vidéos vers une clé USB":"Photos and videos to a USB key",
+"Pillow absent.":"Pillow missing.",
+"Quoi proposer :":"What to propose:",
+"Rafales et photos presque identiques":"Bursts and near-identical photos",
+"Recompresse les grosses photos JPEG (qualité visuelle quasi identique, dates et infos EXIF gardées). L'original va à la corbeille du nettoyage : tu peux le remettre. Rien n'est coché d'avance.":"Recompresses big JPEG photos (almost identical visual quality, dates and EXIF info kept). The original goes to the cleaning trash: you can put it back. Nothing is ticked in advance.",
+"Regroupe les photos prises à la suite qui se ressemblent. La meilleure (la plus nette) est marquée ⭐. Rien n'est coché d'avance : utilise « tout cocher sauf la ⭐ » dans un groupe.":"Groups photos taken in a row that look alike. The best one (the sharpest) is marked ⭐. Nothing is ticked in advance: use “tick all except ⭐” in a group.",
+"Rien n'est effacé sans ton accord, et tout passe d'abord par la corbeille.":"Nothing is erased without your consent, and everything goes through the trash first.",
+"Réduire aussi à 4000 px max (plus d'économie)":"Also reduce to 4000 px max (more saving)",
+"Sur le PC, ouvre :":"On the PC, open:",
+"TOUT COCHER":"TICK ALL",
+"TOUT DÉCOCHER":"UNTICK ALL",
+"Ton téléphone est plein à":"Your phone is full at",
+"Une analyse est déjà en cours ou la clé a disparu.":"An analysis is already running or the key has disappeared.",
+"Vers le cloud (Google Photos)":"To the cloud (Google Photos)",
+"Vers ton PC, en Wi-Fi":"To your PC, over Wi-Fi",
+"an":"year",
+"ans":"years",
+"copiés":"copied",
+"déjà sur la clé":"already on the key",
+"fichiers":"files",
+"fichiers copiés et vérifiés sur la clé":"files copied and verified on the key",
+"fichiers sur la clé":"files on the key",
+"gagnés":"saved",
+"jour(s)":"day(s)",
+"libres":"free",
+"pense à en refaire une.":"remember to make a new one.",
+"photos":"photos",
+"photos allégées":"photos shrunk",
+"toutes":"all",
+"échec(s)":"failure(s)",
+"écriture refusée":"write refused",
+"TRIER":"SORT",
+"en un clic, sans risque":"one tap, no risk",
+"clé USB, PC, cloud":"USB key, PC, cloud",
+"choisir quoi supprimer":"choose what to delete",
+"💾 Clé USB":"💾 USB key",
+"💻 PC · ☁ Cloud · 📱 Applis":"💻 PC · ☁ Cloud · 📱 Apps",
+"Espace":"Space",
+"Doublons":"Duplicates",
+"Captures, floues":"Screenshots, blurry",
+"Rafales":"Bursts",
+"Alléger":"Shrink",
+"Messagerie":"Messaging",
+"Système":"System",
+"🎞 Vidéos":"🎞 Videos",
+"🖼 Photos":"🖼 Photos",
+"📄 Documents":"📄 Documents",
+"✉ Courrier et pièces jointes":"✉ Mail and attachments",
+"📷 Photos lourdes (JPEG)":"📷 Heavy photos (JPEG)",
+"VERS LA CLÉ":"TO THE KEY",
+"ALLÉGER ":"SHRINK ",
+"tout cocher sauf ⭐":"tick all except ⭐",
+"Aucun":"None",
+"Bienvenue ":"Welcome "
 };
 let LANG=(()=>{try{return localStorage.getItem("nap_lang")||"fr"}catch(e){return "fr"}})();
 function t(s){return LANG==="en"&&EN[s]!==undefined?EN[s]:s}
 function toggleLang(){LANG=LANG==="fr"?"en":"fr";try{localStorage.setItem("nap_lang",LANG)}catch(e){};document.documentElement.lang=LANG;applyLang();renderTabs();renderPanel();renderResult();updJob(true);updSel();storage()}
-function applyLang(){document.getElementById("lang").textContent=t("ENGLISH");document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i==="trash_btn"?"À LA CORBEILLE":"SUPPRIMER"))}
+function applyLang(){document.getElementById("lang").textContent=t("ENGLISH");[["btnUsb","VERS LA CLÉ"],["btnShrink","ALLÉGER"]].forEach(([i,k])=>{const e=document.getElementById(i);if(e&&e.querySelector("span"))e.querySelector("span").textContent=t(k)});document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i==="trash_btn"?"À LA CORBEILLE":"SUPPRIMER"))}
 
 /* ============================ utilitaires ============================ */
 const $=id=>document.getElementById(id);
@@ -208,6 +313,11 @@ const TABS=[
  {id:"system",name:"SYSTÈME",sub:"caches des applis, détail",col:"var(--slate)"},
  {id:"trash",name:"CORBEILLE",sub:"restaurer",col:"var(--brown)"},
 ];
+const IOSONLY=!!window.IOS_ONLY;
+let PLAT=IOSONLY?"ios":"android";try{if(!IOSONLY&&localStorage.getItem("nap_plat")==="ios")PLAT="ios"}catch(e){}
+function togglePlat(){PLAT=PLAT==="ios"?"android":"ios";try{localStorage.setItem("nap_plat",PLAT)}catch(e){};renderTabs();renderPanel();renderResult();updSel();platUi()}
+function platUi(){const b=document.getElementById("plat");if(b){b.textContent=PLAT==="ios"?"🤖":"🍎";b.title=PLAT==="ios"?"Android":"iPhone";if(IOSONLY)b.style.display="none"}
+  const st=document.querySelector(".stor");if(st)st.style.display=PLAT==="ios"?"none":""}
 const APPMODE=/[?&]app=1/.test(location.search);if(APPMODE){const a=document.getElementById("igl");if(a){a.href="open://web/"+a.href;a.removeAttribute("target")}}
 if(APPMODE){for(let k=TABS.length-1;k>=0;k--)if(TABS[k].id==="system")TABS.splice(k,1)}
 let tab="junk", RES=null, SEL=new Map(), SHOWN={}, FOLDER_BASE=null, LASTID=0, STOREPIL=true;
@@ -217,7 +327,7 @@ const TOP=[
  {name:"TRIER",sub:"choisir quoi supprimer",col:"var(--orange)",tabs:["folder","big","dups","photos","burst","shrink","social","system"],lab:{folder:"Espace",big:"Gros fichiers",dups:"Doublons",photos:"Captures, floues",burst:"Rafales",shrink:"Alléger",social:"Messagerie",system:"Système"}},
  {name:"CORBEILLE",sub:"restaurer",col:"var(--brown)",tabs:["trash"]}];
 function goTab(id){if(JOB&&JOB.running)return;tab=id;RES=null;SEL.clear();renderTabs();renderPanel();renderResult();updSel();if(tab==="trash")loadTrash()}
-function renderTabs(){const box=$("tabs");box.innerHTML="";const have=new Set(TABS.map(x=>x.id));
+function renderTabs(){const box=$("tabs");box.innerHTML="";if(PLAT==="ios")return;const have=new Set(TABS.map(x=>x.id));
   let cur=null;TOP.forEach(g=>{if(g.tabs.includes(tab))cur=g});
   TOP.forEach(g=>{const ids=g.tabs.filter(i=>have.has(i));if(!ids.length)return;const on=g===cur;
     const b=el("button","tab"+(on?" on":""));b.style.background=g.col;b.append(t(g.name));b.append(el("small","",t(g.sub)));
@@ -240,7 +350,7 @@ function progBlock(){return `<div class="prog" id="prog">
  <div class="banner" id="banner">${t("PRÊT")}</div><div class="msg" id="pmsg"></div>
  <div class="row" style="margin-top:8px"><button class="btn stop" id="btnStop" style="flex:1" onclick="api('/api/stop',{})" disabled>⏹ ${t("ARRÊTER")}</button></div></div>`}
 function selOpts(vals,cur,unit){return vals.map(v=>`<option value="${v}"${v==cur?" selected":""}>${v===0?t("tout"):v+" "+unit}</option>`).join("")}
-function renderPanel(){const p=$("panel");let h="";
+function renderPanel(){const p=$("panel");let h="";if(PLAT==="ios"){p.innerHTML=iosPanel();return}
  if(tab==="folder")h=`<h2>${t("Voir où est passée la place")}</h2><p>${t("Analyse chaque dossier du téléphone et classe du plus lourd au plus léger. Touche un dossier pour entrer dedans.")}</p>
    <div class="row"><button class="btn go" onclick="startScan('folder',{path:null})">🔍 ${t("ANALYSER")}</button></div>`;
  else if(tab==="big")h=`<h2>${t("Les plus gros fichiers")}</h2><p>${t("Liste les vidéos, sauvegardes et téléchargements les plus lourds. Rien n'est coché d'avance : c'est toi qui choisis.")}</p>
@@ -366,10 +476,12 @@ let USBVOL=null;
 async function usbBox(){const b=$("usbBox");if(!b)return;let s={vols:[]};try{s=await api("/api/usb/status")}catch(e){}
   b.innerHTML="";const c=el("div","gnote");
   if(!s.vols.length){c.style.background="#FFF3E0";c.innerHTML="<b>"+t("Aucune clé détectée.")+"</b><br>"+t("Branche la clé avec un adaptateur OTG, attends 5 secondes, puis touche ACTUALISER.");b.append(c);
-    const r=el("div","row");const x=el("button","btn go","🔄 "+t("ACTUALISER"));x.style.flex="1";x.onclick=usbBox;r.append(x);b.append(r);USBVOL=null;return}
+    const r=el("div","row");const x=el("button","btn go","🔄 "+t("ACTUALISER"));x.style.flex="1";x.onclick=usbBox;r.append(x);b.append(r);USBVOL=null;diagBox(b,s);return}
   s.vols.forEach((v,i)=>{const d=el("label","ck row");const r=el("input");r.type="radio";r.name="usbv";r.checked=(USBVOL?USBVOL===v.p:i===0);r.disabled=!v.w;r.onchange=()=>{USBVOL=v.p};if(r.checked)USBVOL=v.p;
     d.append(r);d.append(" 💾 "+v.n+" — "+fmt(v.free)+" "+t("libres")+" / "+fmt(v.total)+(v.fs?" ("+v.fs+")":"")+(v.w?"":" ⚠ "+t("écriture refusée")));b.append(d)});
-  if(!s.vols.some(v=>v.w)){const w=el("div","gnote",t("La clé est vue mais Android refuse d'y écrire. Vérifie que « Accès à tous les fichiers » est autorisé et que la clé n'est pas en lecture seule."));w.style.background="#FFEBEE";b.append(w)}}
+  if(!s.vols.some(v=>v.w)){const w=el("div","gnote",t("La clé est vue mais Android refuse d'y écrire. Vérifie que « Accès à tous les fichiers » est autorisé et que la clé n'est pas en lecture seule."));w.style.background="#FFEBEE";b.append(w);diagBox(b,s)}}
+function diagBox(b,s){if(!s.diag||!s.diag.length)return;const d=el("details");d.style.cssText="margin:6px 0;font-size:13px";const sm=el("summary","",t("Détails techniques (à me montrer si ça ne marche pas)"));d.append(sm);
+  const pre=el("div","gnote");pre.style.whiteSpace="pre-wrap";pre.textContent=s.diag.join("\n");d.append(pre);b.append(d)}
 function askUsb(){const n=SEL.size;if(!n)return;if(!USBVOL){modal("warn",t("Pas de clé"),t("Aucune clé utilisable. Branche-la puis touche ACTUALISER."),[[t("FERMER"),"ok",closeModal]]);return}
   let s=0;SEL.forEach(v=>s+=v);
   modal("ok",t("Copier vers la clé ?"),n+" "+t("fichiers")+" — <b>"+fmt(s)+"</b><br>"+t("Copie vérifiée dans le dossier SAUVEGARDE_TELEPHONE de la clé. Rien n'est effacé du téléphone pour l'instant. Garde l'écran allumé et ne débranche pas la clé."),
@@ -385,6 +497,36 @@ function usbDoneView(box){const R=RES;const c=el("div","crumb");
       modal("warn",t("Libérer la place ?"),R.verified.length+" "+t("fichiers copiés et vérifiés sur la clé")+" — <b>"+fmt(R.vsize)+"</b><br>"+t("Ils seront mis dans la corbeille du nettoyage (récupérables). La place est vraiment libérée quand tu vides la corbeille."),
        [[t("PAS MAINTENANT"),"dis",()=>{SEL.clear();closeModal()}],[t("À LA CORBEILLE"),"ok",()=>doDelete("trash")]])};box.append(b)}}
 
+
+
+/* ============================ iPHONE (guide) ============================ */
+const IOS_FR=[
+["🍎 Pourquoi un guide ?","Apple interdit à toute appli de lire ou d'effacer les fichiers d'une autre appli ou du système. Aucun nettoyeur automatique ne peut donc exister sur iPhone. Voici les vrais moyens, du plus simple au plus efficace. Tout se fait dans les Réglages et l'appli Photos de l'iPhone."],
+["1. Voir ce qui prend la place","Réglages › Général › Stockage de l'iPhone. Attends le calcul : la liste classe les applis du plus lourd au plus léger, avec des recommandations d'Apple."],
+["2. Décharger les applis inutilisées","Même écran, touche une appli › « Décharger l'app » : elle libère son poids mais garde tes données. Tu peux aussi activer « Décharger les apps inutilisées » pour que ce soit automatique."],
+["3. Photos et vidéos : le plus gros gain","Réglages › Photos › active « Photos iCloud » puis « Optimiser le stockage de l'iPhone » : les originaux partent dans iCloud, l'iPhone garde des versions légères. Sans iCloud, passe par l'étape 7."],
+["4. Doublons","Photos › Albums › Utilitaires › « Doublons » › Fusionner (iOS 16 et plus). Les meilleures versions sont gardées."],
+["5. Vidéos, captures, rafales","Photos › Albums › Types de médias › Vidéos : trie visuellement et supprime les vieilles. Même chose pour « Captures d'écran » et « Rafales »."],
+["6. Vider « Supprimés récemment »","Photos › Albums › Utilitaires › Supprimés récemment › Sélectionner › Tout supprimer. La place n'est libérée qu'à ce moment-là (sinon l'iPhone garde 30 jours)."],
+["7. Garder tes photos ailleurs (sans iCloud)","• iPhone 15 ou plus récent (prise USB-C) : branche une clé USB ou un disque, ouvre l'appli Fichiers, puis Photos › Sélectionner › Partager › « Enregistrer dans Fichiers » › ta clé.\n• iPhone plus ancien (Lightning) : câble vers le PC (appli Photos de Windows), ou Google Photos, ou une clé Lightning/USB-C spéciale.\n• Vérifie sur la clé que tout est là, puis supprime sur l'iPhone et vide « Supprimés récemment »."],
+["8. Safari et messages","Réglages › Apps › Safari › « Effacer historique, données de sites ». Réglages › Général › Stockage › Messages › « Vérifier les grandes pièces jointes »."],
+["9. Le plus important","Ne supprime jamais une photo qui n'existe nulle part ailleurs. Vérifie toujours qu'elle est sur la clé, iCloud ou le PC avant d'effacer."]];
+const IOS_EN=[
+["🍎 Why a guide?","Apple forbids any app from reading or erasing the files of another app or of the system. No automatic cleaner can therefore exist on iPhone. Here are the real ways, from easiest to most effective. Everything is done in iPhone Settings and the Photos app."],
+["1. See what takes the space","Settings › General › iPhone Storage. Wait for the calculation: the list sorts apps from heaviest to lightest, with Apple's recommendations."],
+["2. Offload unused apps","Same screen, tap an app › “Offload App”: it frees its size but keeps your data. You can also turn on “Offload Unused Apps” to make it automatic."],
+["3. Photos and videos: the biggest gain","Settings › Photos › turn on “iCloud Photos” then “Optimise iPhone Storage”: originals go to iCloud, the iPhone keeps light versions. Without iCloud, use step 7."],
+["4. Duplicates","Photos › Albums › Utilities › “Duplicates” › Merge (iOS 16 and later). The best versions are kept."],
+["5. Videos, screenshots, bursts","Photos › Albums › Media Types › Videos: sort visually and delete the old ones. Same for “Screenshots” and “Bursts”."],
+["6. Empty “Recently Deleted”","Photos › Albums › Utilities › Recently Deleted › Select › Delete All. Space is only freed at that moment (otherwise the iPhone keeps them 30 days)."],
+["7. Keep your photos elsewhere (without iCloud)","• iPhone 15 or newer (USB-C port): plug in a USB key or drive, open the Files app, then Photos › Select › Share › “Save to Files” › your key.\n• Older iPhone (Lightning): cable to the PC (Windows Photos app), or Google Photos, or a special Lightning/USB-C key.\n• Check on the key that everything is there, then delete on the iPhone and empty “Recently Deleted”."],
+["8. Safari and messages","Settings › Apps › Safari › “Clear History and Website Data”. Settings › General › Storage › Messages › “Review Large Attachments”."],
+["9. Most important","Never delete a photo that exists nowhere else. Always check it is on the key, iCloud or the PC before erasing."]];
+function iosPanel(){const G=LANG==="en"?IOS_EN:IOS_FR;
+  let h=`<h2>🍎 ${LANG==="en"?"Free up space on iPhone":"Libérer de la place sur iPhone"}</h2>`;
+  G.forEach(([a,b],i)=>{h+=`<div class="grp" style="margin:8px 0"><div class="gh"><b>${a}</b></div><div class="gnote" style="white-space:pre-line">${b}</div></div>`});
+  if(!IOSONLY)h+=`<div class="row"><button class="btn go" style="flex:1" onclick="togglePlat()">🤖 ${LANG==="en"?"BACK TO ANDROID":"RETOUR À ANDROID"}</button></div>`;
+  return h}
 
 /* ============================ ENVOYER / ALLEGER / ACCUEIL ============================ */
 function sendPanel(){return `<h2>${t("Envoyer ses photos et vidéos ailleurs")}</h2>
@@ -405,7 +547,7 @@ async function doShrink(){const ms=($("shrk")&&$("shrk").checked)?4000:0;closeMo
   $("btnStop").disabled=false;JOB={running:true,pct:0,elapsed:0,msg:"",kind:"shrink"};setBanner("run");clearInterval(POLL);POLL=setInterval(pollJob,500);pollJob()}
 function shrinkDoneView(box){const c=el("div","crumb");c.append(el("b","",RES.done+" "+t("photos allégées")+" — "+fmt(RES.saved)+" "+t("gagnés")));box.append(c);
   box.append(el("div","gnote",t("Les originaux sont dans la corbeille : vide-la quand tu es sûr, pour récupérer la place.")));storage()}
-async function welcome(){let st={last_usb:0,used_pct:0};try{st=await api("/api/state")}catch(e){}
+async function welcome(){if(IOSONLY||PLAT==="ios")return;let st={last_usb:0,used_pct:0};try{st=await api("/api/state")}catch(e){}
   try{if(localStorage.getItem("nap_welcome")==="off")return}catch(e){}
   let extra="";if(st.used_pct>=80)extra+="<br><b style='color:#C62828'>"+t("Ton téléphone est plein à")+" "+Math.round(st.used_pct)+" %.</b>";
   if(!st.last_usb)extra+="<br>"+t("Aucune copie sur clé faite pour l'instant.");else{const d=Math.floor((Date.now()/1000-st.last_usb)/86400);extra+="<br>"+t("Dernière copie sur clé :")+" "+d+" "+t("jour(s)")+(d>30?" — "+t("pense à en refaire une."):".")}
@@ -478,10 +620,10 @@ async function loadTrash(){const r=await api("/api/trash");const box=$("trashLis
     row.append(tx,rs,em);box.append(row)})}
 
 /* ============================ stockage ============================ */
-async function storage(){try{const s=await api("/api/storage");STOREPIL=s.pil;const pc=s.total?100*s.used/s.total:0;$("sbar").style.width=pc+"%";$("sbar").style.background=pc>90?"var(--red)":pc>75?"var(--orange)":"var(--green)";
+async function storage(){if(IOSONLY)return;try{const s=await api("/api/storage");STOREPIL=s.pil;const pc=s.total?100*s.used/s.total:0;$("sbar").style.width=pc+"%";$("sbar").style.background=pc>90?"var(--red)":pc>75?"var(--orange)":"var(--green)";
   $("sused").textContent=t("Utilisé")+" "+fmt(s.used)+" "+t("sur")+" "+fmt(s.total);$("sfree").textContent=t("Libre")+" "+fmt(s.free)}catch(e){}}
 document.documentElement.lang=LANG;
-applyLang();renderTabs();renderPanel();storage();setTimeout(welcome,400);
+applyLang();renderTabs();renderPanel();storage();platUi();setTimeout(welcome,400);
 </script>
 </body>
 </html>
